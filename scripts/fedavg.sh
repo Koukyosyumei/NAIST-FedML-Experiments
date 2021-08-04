@@ -35,7 +35,7 @@ start_time=`date +%s`
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir ../../FedML/data/MNIST \
+--data_dir ../../../FedML/data/MNIST \
 --model lr \
 --partition_method hetero  \
 --client_num_in_total 1000 \
