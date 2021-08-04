@@ -28,7 +28,7 @@ round() {
 }
 
 # 1. MNIST standalone FedAvg
-cd ../fedavg
+cd ../scripts/fedavg
 
 start_time=`date +%s`
 
