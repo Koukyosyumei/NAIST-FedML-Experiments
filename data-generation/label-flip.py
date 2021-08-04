@@ -10,6 +10,7 @@ import torch
 
 if __name__ == "__main__":
 
+    # training-data
     with open(
         "dev/FedML/data/MNIST/train/all_data_0_niid_0_keep_10_train_9.json", "r"
     ) as inf:
@@ -40,7 +41,7 @@ if __name__ == "__main__":
         cdata["quality"].append(1 - flip_size / data_size)
 
     with open(
-        "dev/NAIST-Experiments/data/label_flip/train_label_fliped.json", "w"
+        "dev/NAIST-Experiments/data/label_flip/train/train_label_fliped.json", "w"
     ) as f:
         json.dump(cdata, f)
     with open(
@@ -48,3 +49,17 @@ if __name__ == "__main__":
         "wb",
     ) as f:
         pickle.dump(cdata["quality"], f)
+
+    # test
+    with open(
+        "dev/FedML/data/MNIST/test/all_data_0_niid_0_keep_10_test_9.json", "r"
+    ) as inf:
+        cdata = json.load(inf)
+    cdata["user_data"].pop("f_00000")
+    cdata["users"] = cdata["users"][1:]
+    cdata["num_samples"] = cdata["num_samples"][1:]
+    cdata["quality"] = []
+    with open(
+        "dev/NAIST-Experiments/data/label_flip/test/test_label_fliped.json", "w"
+    ) as f:
+        json.dump(cdata, f)
