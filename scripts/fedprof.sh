@@ -28,14 +28,14 @@ round() {
 }
 
 # 1. MNIST standalone FedAvg
-cd ../src/fedavg
+cd ../src/fedprof
 
 start_time=`date +%s`
 
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir ../../../FedML/data/MNIST \
+--data_dir ../data/label_flip \
 --model lr \
 --partition_method hetero  \
 --client_num_in_total 1000 \
@@ -45,6 +45,7 @@ python3 ./main.py \
 --batch_size 10 \
 --client_optimizer sgd \
 --lr 0.03 \
+--alpha 10 \
 --ci 0
 
 end_time=`date +%s`
