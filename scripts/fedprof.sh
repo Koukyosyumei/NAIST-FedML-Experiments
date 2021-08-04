@@ -36,9 +36,9 @@ python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
 --data_dir ../../data/label_flip \
---model lr \
+--model nn \
 --partition_method hetero  \
---client_num_in_total 1000 \
+--client_num_in_total 300 \
 --client_num_per_round 10 \
 --comm_round 200 \
 --epochs 1 \

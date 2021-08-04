@@ -8,12 +8,12 @@ import sys
 
 import numpy as np
 import torch
-import wandb
 from scipy.stats import spearmanr
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from torch import nn
 
+import wandb
 from footprinter import FootPrinter
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
@@ -40,6 +40,7 @@ class FedProfAPI(FedAvgAPI):
         self.pred_credibility = np.array([0.0] * self.args.client_num_in_total)
         self.criterion = nn.CrossEntropyLoss()
         self.alpha = args.alpha
+        self.device = device
         """
         self.validation_model = copy.deepcopy(self.model_trainer.model)
         self.validation_optimizer = torch.optim.SGD(
@@ -51,7 +52,7 @@ class FedProfAPI(FedAvgAPI):
         w_global = self.model_trainer.get_model_params()
         client_indexes = []
 
-        footprinter = FootPrinter(None)
+        footprinter = FootPrinter(device=self.device)
 
         for round_idx in range(self.args.comm_round):
 
@@ -117,21 +118,6 @@ class FedProfAPI(FedAvgAPI):
                 else:
                     self._local_test_on_all_clients(round_idx)
 
-            ###
-
-            if self.args.task == "water":
-                auc = roc_auc_score(
-                    (np.array(self.true_credibility) == 1).astype(int),
-                    self.client_credibility,
-                )
-                wandb.log({"Credibility/AUC": auc, "round": round_idx})
-
-                auc = roc_auc_score(
-                    (np.array(self.true_credibility) == 1).astype(int),
-                    self.client_vanila_credibility,
-                )
-                wandb.log({"Credibility/Vanila-AUC": auc, "round": round_idx})
-
     def _client_sampling(self, round_idx, client_num_in_total, client_num_per_round):
         if client_num_in_total == client_num_per_round:
             client_indexes = [
@@ -146,7 +132,7 @@ class FedProfAPI(FedAvgAPI):
                 range(client_num_in_total),
                 num_clients,
                 replace=False,
-                p=self.pred_credibility,
+                p=self.pred_credibility / np.sum(self.pred_credibility),
             )
         logging.info("client_indexes = %s" % str(client_indexes))
         return client_indexes

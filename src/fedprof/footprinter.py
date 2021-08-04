@@ -8,6 +8,7 @@ class FootPrinter:
 
     def update_encoder(self, encoder):
         self.encoder = encoder
+        self.encoder.to(self.device)
 
     def culc_footprint(self, local_data, dataloader=True):
         if dataloader is True:
@@ -18,7 +19,7 @@ class FootPrinter:
                 latent_representation.append(output)
             latent_representation = torch.cat(latent_representation)
         else:
-            latent_representation = self.encoder(local_data)
+            latent_representation = self.encoder(local_data.to(self.device))
 
         u = torch.mean(latent_representation, axis=0)
         sigma = torch.std(latent_representation, axis=0)
