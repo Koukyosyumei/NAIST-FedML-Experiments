@@ -32,4 +32,4 @@ class FootPrinter:
             (client_sigma ** 2) + (client_u - server_u) ** 2
         ) / (2 * (server_sigma ** 2))
 
-        return torch.mean(kl)
+        return torch.mean(kl).item()
