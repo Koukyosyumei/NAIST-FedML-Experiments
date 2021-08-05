@@ -32,10 +32,12 @@ cd ../src/fedavg
 
 start_time=`date +%s`
 
+# --data_dir ../../../FedML/data/MNIST \
+
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir ../../../FedML/data/MNIST \
+--data_dir ../../data/label_flip \
 --model lr \
 --partition_method hetero  \
 --client_num_in_total 1000 \

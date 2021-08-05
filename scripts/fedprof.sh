@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -S /bin/bash
-# #$ -q pascal_short.q
+#$ -q pascal_short.q
 
 set -ex
 
@@ -38,8 +38,8 @@ python3 ./main.py \
 --data_dir ../../data/label_flip \
 --model nn \
 --partition_method hetero  \
---client_num_in_total 300 \
---client_num_per_round 10 \
+--client_num_in_total 1000 \
+--client_num_per_round 100 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \

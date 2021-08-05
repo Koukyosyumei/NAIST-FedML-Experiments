@@ -8,13 +8,11 @@ import sys
 
 import numpy as np
 import torch
+import wandb
 from scipy.stats import spearmanr
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from torch import nn
-
-import wandb
-from footprinter import FootPrinter
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
@@ -22,7 +20,7 @@ from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
 
-class FedProfAPI(FedAvgAPI):
+class QualityInferenceAPI(FedAvgAPI):
     def __init__(
         self,
         dataset,
@@ -51,41 +49,18 @@ class FedProfAPI(FedAvgAPI):
     def train(self):
         w_global = self.model_trainer.get_model_params()
         client_indexes = []
+        prev_client_indexes = []
 
-        footprinter = FootPrinter(device=self.device)
+        score_improve_curr = 0
+        score_improve_prev = 0
+        score_curr = 0
+        score_prev = 0
 
         for round_idx in range(self.args.comm_round):
 
             logging.info("################Communication round : {}".format(round_idx))
 
             w_locals = []
-
-            # calculate credbility of each client
-            footprinter.update_encoder(self.model_trainer.model.fc1)
-            server_footprint = footprinter.culc_footprint(
-                self.X_server, dataloader=False
-            )
-            for idx in range(self.args.client_num_in_total):
-                client_footprint = footprinter.culc_footprint(
-                    self.train_data_local_dict[idx]
-                )
-
-                self.pred_credibility[idx] = math.e ** (
-                    -self.alpha
-                    * footprinter.kldiv_between_server_and_client(
-                        server_footprint, client_footprint
-                    )
-                )
-                """
-                self.pred_credibility[
-                    idx
-                ] -= footprinter.kldiv_between_server_and_client(
-                    server_footprint, client_footprint
-                )
-                """
-
-            sim_footprint = spearmanr(self.pred_credibility, self.true_credibility)[0]
-            wandb.log({"Credibility/Spearmanr": sim_footprint, "round": round_idx})
 
             """
             for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
@@ -126,6 +101,31 @@ class FedProfAPI(FedAvgAPI):
                 else:
                     self._local_test_on_all_clients(round_idx)
 
+            # server side test
+            score_prev = score_curr
+            entropy_prev = entropy_curr
+
+            score_curr, loss_curr, entropy_curr = self._server_test(
+                self.X_server, self.y_server
+            )
+
+            score_improve_prev = score_improve_curr
+            score_improve_curr = score_curr - score_prev if round_idx > 0 else 0
+            if round_idx > 0 and score_improve_curr > score_improve_prev:
+                self.pred_credibility[client_indexes] += 1
+                self.pred_credibility[prev_client_indexes] -= 1
+            if score_improve_curr < 0:
+                self.pred_credibility[client_indexes] -= 1
+
+            if round_idx > 0:
+                sim_vanila = spearmanr(self.pred_credibility, self.true_credibility)[0]
+            else:
+                sim_vanila = 0
+            wandb.log({"Credibility/Spearmanr": sim_vanila, "round": round_idx})
+
+            prev_client_indexes = copy.deepcopy(client_indexes)
+
+    """"
     def _client_sampling(self, round_idx, client_num_in_total, client_num_per_round):
         if client_num_in_total == client_num_per_round:
             client_indexes = [
@@ -144,3 +144,12 @@ class FedProfAPI(FedAvgAPI):
             )
         logging.info("client_indexes = %s" % str(client_indexes))
         return client_indexes
+    """
+
+    def _server_test(self, X_val, y_val, func=accuracy_score):
+        y_pred = self.model_trainer.model(X_val).cpu().detach()
+        entropy = ((-math.e ** y_pred) * y_pred).sum(axis=1).mean()
+        _, predicted = torch.max(y_pred, 1)
+        score = accuracy_score(predicted.detach().numpy(), y_val.detach().numpy())
+        loss = self.criterion(y_pred, y_val.to(int))
+        return score.item(), loss.item(), entropy.item()
