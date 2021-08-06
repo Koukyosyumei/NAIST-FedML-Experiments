@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -S /bin/bash
-#$ -q pascal_short.q
+# #$ -q pascal_short.q
 
 set -ex
 
@@ -38,8 +38,8 @@ python3 ./main.py \
 --data_dir ../../../FedML/data/MNIST \
 --model lr \
 --partition_method hetero  \
---client_num_in_total 200 \
---client_num_per_round 200 \
+--client_num_in_total 50 \
+--client_num_per_round 50 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
