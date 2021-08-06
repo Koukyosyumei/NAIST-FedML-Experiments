@@ -10,7 +10,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import wandb
-from footprinter import FootPrinter
 from scipy.stats import spearmanr
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
@@ -18,15 +17,17 @@ from torch import nn
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
-from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
+from rffl_client import RFFL_Client
 from utils import flatten, mask_grad_update_by_order
 
 
 class RFFLAPI(FedAvgAPI):
     def __init__(self, dataset, device, args, model_trainer):
         super().__init__(dataset, device, args, model_trainer)
+
+        assert args.client_num_in_total == args.client_num_per_round
 
         self.rs = torch.zeros(args.client_num_in_total, device=device)
         self.past_phis = []
@@ -36,6 +37,73 @@ class RFFLAPI(FedAvgAPI):
 
         self.use_sparsify = True
         self.use_reputation = True
+        self.threshold = 1.0
+        self.warm_up = 10
+
+    def _setup_clients(
+        self,
+        train_data_local_num_dict,
+        train_data_local_dict,
+        test_data_local_dict,
+        model_trainer,
+    ):
+        logging.info("############setup_clients (START)#############")
+        for client_idx in range(self.args.client_num_per_round):
+            c = RFFL_Client(
+                client_idx,
+                train_data_local_dict[client_idx],
+                test_data_local_dict[client_idx],
+                train_data_local_num_dict[client_idx],
+                self.args,
+                self.device,
+                model_trainer,
+            )
+            self.client_list.append(c)
+        logging.info("############setup_clients (END)#############")
+
+    def train(self):
+        client_idx_to_reward_gradients = {}
+        for round_idx in range(self.args.comm_round):
+
+            logging.info("################Communication round : {}".format(round_idx))
+
+            gradient_locals = []
+
+            """
+            for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
+            Instead of changing the 'Client' instances, our implementation keeps the 'Client' instances and then updates their local dataset 
+            """
+            client_indexes = self._client_sampling(
+                round_idx, self.args.client_num_in_total, self.args.client_num_per_round
+            )
+            logging.info("client_indexes = " + str(client_indexes))
+
+            for client_idx in self.R_set:
+                client = self.client_list[client_idx]
+                client.update_local_dataset(
+                    client_idx,
+                    self.train_data_local_dict[client_idx],
+                    self.test_data_local_dict[client_idx],
+                    self.train_data_local_num_dict[client_idx],
+                )
+                if round_idx > 0:
+                    client.download(client_idx_to_reward_gradients[client_idx])
+                grad = client.train()
+                gradient_locals.append(grad)
+
+            # update global weights
+            client_idx_to_reward_gradients = self._aggregate(gradient_locals, round_idx)
+
+            # test results
+            # at last round
+            if round_idx == self.args.comm_round - 1:
+                self._local_test_on_all_clients(round_idx)
+            # per {frequency_of_the_test} round
+            elif round_idx % self.args.frequency_of_the_test == 0:
+                if self.args.dataset.startswith("stackoverflow"):
+                    self._local_test_on_validation_set(round_idx)
+                else:
+                    self._local_test_on_all_clients(round_idx)
 
     def _aggregate(self, grad_locals, round_idx):
         """Aggerate the gradients sent by the clients
@@ -92,7 +160,7 @@ class RFFLAPI(FedAvgAPI):
 
             # remove the unuseful cilents
             self.rs = torch.div(self.rs, self.rs.sum())
-            if round_idx > 10:
+            if round_idx > self.warm_up:
                 for client_idx in self.R_set:
                     if self.rs[client_idx] < curr_threshold:
                         self.rs[client_idx] = 0
