@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/"))
 from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
-from utils import flatten
+from utils import flatten, mask_grad_update_by_order
 
 
 class RFFLAPI(FedAvgAPI):
@@ -38,74 +38,89 @@ class RFFLAPI(FedAvgAPI):
         self.use_reputation = True
 
     def _aggregate(self, grad_locals, round_idx):
+        """Aggerate the gradients sent by the clients
+        Args:
+            grad_locals: {client_idx: (saple_num, gradient)}
+            round_idx: index of the current round
+
+        Returns:
+            reward_gradients: {client_idx: gradient}
+        """
         aggregated_gradient = [
             torch.zeros(param.shape).to(self.device)
             for param in self.model_trainer.model.parameters()
         ]
 
+        # 各クライアントのデータ数の集計
         training_num = 0
-        for sample_num, _ in grad_locals:
+        for client_idx, (sample_num, _) in grad_locals.items():
             training_num += sample_num
+        relative_sizes = {
+            client_idx: sample_num / training_num
+            for client_idx, (sample_num, _) in grad_locals.items()
+        }
 
         if not self.use_reputation:
             # fedavg
-            for local_sample_number, gradient in grad_locals:
-                weight = local_sample_number / training_num
+            for client_idx, (local_sample_number, gradient) in grad_locals.items():
                 for grad_1, grad_2 in zip(aggregated_gradient, gradient):
-                    grad_1.data += grad_2.data * weight
+                    grad_1.data += grad_2.data * relative_sizes[client_idx]
 
         else:
-            if round_idx == 0:
-                weights = [
-                    local_sample_number / training_num
-                    for local_sample_number, _ in grad_locals
-                ]
-            else:
-                weights = self.rs
-
-            for gradient, weight in zip(grad_locals, weights):
+            # Aggregation
+            for client_idx, (gradient, weight) in grad_locals.items():
                 for grad_1, grad_2 in zip(aggregated_gradient, gradient):
-                    grad_1.data += grad_2.data * weight
-
+                    if round_idx == 0:
+                        grad_1.data += grad_2.data * relative_sizes[client_idx]
+                    else:
+                        grad_1.data += grad_2.data * self.rs[client_idx]
             flat_aggre_grad = flatten(aggregated_gradient)
+
+            # culculate the reputations
+            curr_threshold = self.threshold * (1.0 / len(self.R_set))
             phis = torch.zeros(self.args.client_num_in_total, device=self.device)
-            for i, gradient in enumerate(grad_locals):
-                phis[i] = F.cosine_similarity(
+
+            for client_idx, gradient in zip(self.R_set, grad_locals):
+                phis[client_idx] = F.cosine_similarity(
                     flatten(gradient), flat_aggre_grad, 0, 1e-10
+                )
+                self.rs[client_idx] = (
+                    self.alpha * self.rs[client_idx]
+                    + (1 - self.alpha) * self.phis[client_idx]
                 )
             self.past_phis.append(phis)
 
-            self.rs = self.alpha * self.rs + (1 - self.alpha) * phis
-            for i in range(self.args.client_num_in_total):
-                if i not in self.R_set:
-                    self.rs[i] = 0
+            # remove the unuseful cilents
             self.rs = torch.div(self.rs, self.rs.sum())
-
             if round_idx > 10:
-                R_set_copy = copy.deepcopy(self.R_set)
-                curr_threshold = self.threshold * (1.0 / len(R_set_copy))
-
-                for i in range(self.args.client_num_in_total):
-                    if i in R_set_copy and self.rs[i] < curr_threshold:
-                        self.rs[i] = 0
-                        self.R_set.remove(i)
-
+                for client_idx in self.R_set:
+                    if self.rs[client_idx] < curr_threshold:
+                        self.rs[client_idx] = 0
+                        self.R_set.remove(client_idx)
             self.rs = torch.div(self.rs, self.rs.sum())
+
             self.r_threshold.append(self.threshold * (1.0 / len(self.R_set)))
             q_ratios = torch.div(self.rs, torch.max(self.rs))
-
             self.rs_dict.append(self.rs)
             self.qs_dict.append(q_ratios)
 
-        for i in range(self.args.client_num_in_total):
+        # Download
+        reward_gradients = {}
+        for client_idx in self.R_set:
             if self.use_sparsify and self.use_reputation:
-                q_ratio = q_ratios[i]
-                reward_gradient = aggregated_gradient
+                q_ratio = q_ratios[client_idx]
+                reward_gradients[client_idx] = mask_grad_update_by_order(
+                    aggregated_gradient, mask_percentile=q_ratio, mode="layer"
+                )
 
             elif self.use_sparsify and not self.use_reputation:
-                reward_gradient = aggregated_gradient
+                reward_gradients[client_idx] = mask_grad_update_by_order(
+                    aggregated_gradient,
+                    mask_percentile=relative_sizes[client_idx],
+                    mode="layer",
+                )
 
             else:
-                reward_gradient = aggregated_gradient
+                reward_gradients[client_idx] = aggregated_gradient
 
-        return reward_gradient
+        return reward_gradients
