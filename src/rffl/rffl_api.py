@@ -24,10 +24,12 @@ from utils import flatten, mask_grad_update_by_order
 
 
 class RFFLAPI(FedAvgAPI):
-    def __init__(self, dataset, device, args, model_trainer):
+    def __init__(self, dataset, device, args, model_trainer, true_credibility):
         super().__init__(dataset, device, args, model_trainer)
 
         assert args.client_num_in_total == args.client_num_per_round
+
+        self.true_credibility = true_credibility
 
         self.rs = torch.zeros(args.client_num_in_total, device=device)
         self.past_phis = []
@@ -104,6 +106,11 @@ class RFFLAPI(FedAvgAPI):
                     self._local_test_on_validation_set(round_idx)
                 else:
                     self._local_test_on_all_clients(round_idx)
+
+            sim_credibility = spearmanr(
+                self.rs.to("cpu").detach().numpy(), self.true_credibility
+            )[0]
+            wandb.log({"Credibility/Spearmanr": sim_credibility, "round": round_idx})
 
     def _aggregate(self, grad_locals, round_idx):
         """Aggerate the gradients sent by the clients
