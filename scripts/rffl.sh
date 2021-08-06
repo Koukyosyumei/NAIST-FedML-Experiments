@@ -36,16 +36,15 @@ python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
 --data_dir ../../data/label_flip \
---model nn \
+--model lr \
 --partition_method hetero  \
---client_num_in_total 1000 \
+--client_num_in_total 100 \
 --client_num_per_round 100 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
 --lr 0.03 \
---alpha 10 \
 --ci 0
 
 end_time=`date +%s`
