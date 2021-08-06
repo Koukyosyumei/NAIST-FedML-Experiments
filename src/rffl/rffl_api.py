@@ -47,8 +47,9 @@ class RFFLAPI(FedAvgAPI):
 
         self.use_sparsify = True
         self.use_reputation = True
-        self.threshold = 1.0
+        self.threshold = 1 / (3 * args.client_num_in_total,)
         self.warm_up = 10
+        self.alpha = 0.95
 
     def _setup_clients(
         self,
@@ -58,6 +59,7 @@ class RFFLAPI(FedAvgAPI):
         model_trainer,
     ):
         logging.info("############setup_clients (START)#############")
+        self.client_idx_to_statedict = {}
         for client_idx in range(self.args.client_num_per_round):
             c = RFFL_Client(
                 client_idx,
@@ -69,10 +71,14 @@ class RFFLAPI(FedAvgAPI):
                 model_trainer,
             )
             self.client_list.append(c)
+            self.client_idx_to_statedict[
+                client_idx
+            ] = c.model_trainer.get_model_params()
         logging.info("############setup_clients (END)#############")
 
     def train(self):
         client_idx_to_reward_gradients = {}
+
         for round_idx in range(self.args.comm_round):
 
             logging.info("################Communication round : {}".format(round_idx))
@@ -96,10 +102,19 @@ class RFFLAPI(FedAvgAPI):
                     self.test_data_local_dict[client_idx],
                     self.train_data_local_num_dict[client_idx],
                 )
+                # そのクライアントのパラメータをセット
+                client.model_trainer.set_model_params(
+                    self.client_idx_to_statedict[client_idx]
+                )
+                # 前回のラウンドで計算したgradientで、パラメータを更新
                 if round_idx > 0:
                     client.download(client_idx_to_reward_gradients[client_idx])
+                # 更新したパラメータを保存
+                self.client_idx_to_statedict[
+                    client_idx
+                ] = client.model_trainer.get_model_params()
+                # 学習
                 grad = client.train()
-                print("received grad", grad)
                 gradient_locals[client_idx] = grad
 
             # update global weights
@@ -164,13 +179,16 @@ class RFFLAPI(FedAvgAPI):
             curr_threshold = self.threshold * (1.0 / len(self.R_set))
             phis = torch.zeros(self.args.client_num_in_total, device=self.device)
 
-            for client_idx, (_, gradient) in zip(self.R_set, grad_locals.items()):
+            for client_idx, (c_idx, (_, gradient)) in zip(
+                self.R_set, grad_locals.items()
+            ):
+                assert client_idx == c_idx
                 phis[client_idx] = F.cosine_similarity(
                     flatten(gradient), flat_aggre_grad, 0, 1e-10
                 )
                 self.rs[client_idx] = (
                     self.alpha * self.rs[client_idx]
-                    + (1 - self.alpha) * self.phis[client_idx]
+                    + (1 - self.alpha) * phis[client_idx]
                 )
             self.past_phis.append(phis)
 
