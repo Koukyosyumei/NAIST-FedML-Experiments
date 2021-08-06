@@ -45,9 +45,9 @@ class RFFLAPI(FedAvgAPI):
 
         self.R_set = list(range(args.client_num_in_total))
 
-        self.use_sparsify = True
-        self.use_reputation = True
-        self.threshold = 1 / (3 * args.client_num_in_total,)
+        self.use_sparsify = False
+        self.use_reputation = False
+        self.threshold = 1 / (3 * args.client_num_in_total)
         self.warm_up = 10
         self.alpha = 0.95
 
@@ -89,10 +89,7 @@ class RFFLAPI(FedAvgAPI):
             for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
             Instead of changing the 'Client' instances, our implementation keeps the 'Client' instances and then updates their local dataset 
             """
-            client_indexes = self._client_sampling(
-                round_idx, self.args.client_num_in_total, self.args.client_num_per_round
-            )
-            logging.info("client_indexes = " + str(client_indexes))
+            logging.info("client_indexes = " + str(self.R_set))
 
             for client_idx in self.R_set:
                 client = self.client_list[client_idx]
@@ -131,10 +128,12 @@ class RFFLAPI(FedAvgAPI):
                 else:
                     self._local_test_on_all_clients(round_idx)
 
+            """
             sim_credibility = spearmanr(
                 self.rs.to("cpu").detach().numpy(), self.true_credibility
             )[0]
             wandb.log({"Credibility/Spearmanr": sim_credibility, "round": round_idx})
+            """
 
     def _aggregate(self, grad_locals, round_idx):
         """Aggerate the gradients sent by the clients

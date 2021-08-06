@@ -35,11 +35,11 @@ start_time=`date +%s`
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir ../../data/label_flip \
+--data_dir ../../../FedML/data/MNIST \
 --model lr \
 --partition_method hetero  \
---client_num_in_total 100 \
---client_num_per_round 100 \
+--client_num_in_total 200 \
+--client_num_per_round 200 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \

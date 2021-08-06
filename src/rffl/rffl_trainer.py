@@ -2,7 +2,11 @@ import logging
 import os
 import sys
 
+import torch
 from torch import nn
+from torch.linalg import norm
+
+from utils import flatten, unflatten
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
@@ -10,11 +14,17 @@ from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelT
 
 
 class RFFL_ModelTrainer(MyModelTrainer):
-    def get_model_gradients(self):
+    def get_model_gradients(self, gamma=0.5):
         grads = [param.grad for param in self.model.parameters()]
+        flattened = flatten(grads)
+        norm_value = norm(flattened) + 1e-7  # to prevent division by zero
+        grads = unflatten(
+            torch.multiply(torch.tensor(gamma), torch.div(flattened, norm_value)),
+            grads,
+        )
         return grads
 
-    def set_model_gradients(self, gradient, device, weight=1.0):
+    def set_model_gradients(self, gradient, device, weight=1e3):
         gradient = [grad.to(device) for grad in gradient]
 
         for param, grad in zip(self.model.parameters(), gradient):

@@ -17,6 +17,15 @@ def compute_grad_update(old_model, new_model, device=None):
 def flatten(grad_update):
     return torch.cat([update.data.view(-1) for update in grad_update])
 
+def unflatten(flattened, normal_shape):
+	grad_update = []
+	for param in normal_shape:
+		n_params = len(param.view(-1))
+		grad_update.append(torch.as_tensor(flattened[:n_params]).reshape(param.size())  )
+		flattened = flattened[n_params:]
+
+	return grad_update
+
 
 def mask_grad_update_by_magnitude(grad_update, mask_constant):
     # mask all but the updates with larger magnitude than <mask_constant> to zero
