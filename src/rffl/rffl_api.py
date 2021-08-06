@@ -9,11 +9,12 @@ import sys
 import numpy as np
 import torch
 import torch.nn.functional as F
-import wandb
 from scipy.stats import spearmanr
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from torch import nn
+
+import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
@@ -27,6 +28,11 @@ class RFFLAPI(FedAvgAPI):
     def __init__(self, dataset, device, args, model_trainer, true_credibility):
         super().__init__(dataset, device, args, model_trainer)
 
+        print(
+            "the number of clients ",
+            args.client_num_in_total,
+            args.client_num_per_round,
+        )
         assert args.client_num_in_total == args.client_num_per_round
 
         self.true_credibility = true_credibility
@@ -36,6 +42,8 @@ class RFFLAPI(FedAvgAPI):
         self.rs_dict = []
         self.r_threshold = []
         self.qs_dict = []
+
+        self.R_set = list(range(args.client_num_in_total))
 
         self.use_sparsify = True
         self.use_reputation = True
@@ -69,7 +77,7 @@ class RFFLAPI(FedAvgAPI):
 
             logging.info("################Communication round : {}".format(round_idx))
 
-            gradient_locals = []
+            gradient_locals = {}
 
             """
             for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
@@ -91,7 +99,8 @@ class RFFLAPI(FedAvgAPI):
                 if round_idx > 0:
                     client.download(client_idx_to_reward_gradients[client_idx])
                 grad = client.train()
-                gradient_locals.append(grad)
+                print("received grad", grad)
+                gradient_locals[client_idx] = grad
 
             # update global weights
             client_idx_to_reward_gradients = self._aggregate(gradient_locals, round_idx)
@@ -122,8 +131,8 @@ class RFFLAPI(FedAvgAPI):
             reward_gradients: {client_idx: gradient}
         """
         aggregated_gradient = [
-            torch.zeros(param.shape).to(self.device)
-            for param in self.model_trainer.model.parameters()
+            torch.zeros(grad.shape).to(self.device)
+            for grad in list(grad_locals.values())[0][1]
         ]
 
         # 各クライアントのデータ数の集計
@@ -143,7 +152,7 @@ class RFFLAPI(FedAvgAPI):
 
         else:
             # Aggregation
-            for client_idx, (gradient, weight) in grad_locals.items():
+            for client_idx, (_, gradient) in grad_locals.items():
                 for grad_1, grad_2 in zip(aggregated_gradient, gradient):
                     if round_idx == 0:
                         grad_1.data += grad_2.data * relative_sizes[client_idx]
@@ -155,7 +164,7 @@ class RFFLAPI(FedAvgAPI):
             curr_threshold = self.threshold * (1.0 / len(self.R_set))
             phis = torch.zeros(self.args.client_num_in_total, device=self.device)
 
-            for client_idx, gradient in zip(self.R_set, grad_locals):
+            for client_idx, (_, gradient) in zip(self.R_set, grad_locals.items()):
                 phis[client_idx] = F.cosine_similarity(
                     flatten(gradient), flat_aggre_grad, 0, 1e-10
                 )

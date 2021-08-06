@@ -11,10 +11,7 @@ from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelT
 
 class RFFL_ModelTrainer(MyModelTrainer):
     def get_model_gradients(self):
-        grads = []
-        for param in self.model.parameters():
-            grads.append(param.grad)
-
+        grads = [param.grad for param in self.model.parameters()]
         return grads
 
     def set_model_gradients(self, gradient, device, weight=1.0):

@@ -7,6 +7,7 @@ import sys
 
 import numpy as np
 import torch
+
 import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
@@ -57,9 +58,9 @@ from fedml_api.standalone.fedavg.my_model_trainer_nwp import (
 from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
     MyModelTrainer as MyModelTrainerTAG,
 )
-from model import MyNet
 
 from rffl_api import RFFLAPI
+from rffl_trainer import RFFL_ModelTrainer
 
 
 def add_args(parser):
@@ -206,6 +207,7 @@ def load_data(args, dataset_name):
         we uniformly sample a fraction of clients each round (as the original FedAvg paper)
         """
         args.client_num_in_total = client_num
+        args.client_num_per_round = client_num
 
     elif dataset_name == "femnist":
         logging.info("load_data. dataset_name = %s" % dataset_name)
@@ -493,7 +495,7 @@ def custom_model_trainer(args, model):
     elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
         return MyModelTrainerNWP(model)
     else:  # default model trainer is for classification problem
-        return MyModelTrainerCLS(model)
+        return RFFL_ModelTrainer(model)
 
 
 if __name__ == "__main__":
