@@ -1,4 +1,5 @@
 import copy
+import math
 
 import torch
 
@@ -24,3 +25,40 @@ def mask_grad_update_by_magnitude(grad_update, mask_constant):
     for i, update in enumerate(grad_update):
         grad_update[i].data[update.data.abs() < mask_constant] = 0
     return grad_update
+
+
+def mask_grad_update_by_order(
+    grad_update, mask_order=None, mask_percentile=None, mode="all"
+):
+
+    if mode == "all":
+        # mask all but the largest <mask_order> updates (by magnitude) to zero
+        all_update_mod = torch.cat(
+            [update.data.view(-1).abs() for update in grad_update]
+        )
+        if not mask_order and mask_percentile is not None:
+            mask_order = int(len(all_update_mod) * mask_percentile)
+
+        if mask_order == 0:
+            return mask_grad_update_by_magnitude(grad_update, float("inf"))
+        else:
+            topk, indices = torch.topk(all_update_mod, mask_order)
+            return mask_grad_update_by_magnitude(grad_update, topk[-1])
+
+    elif mode == "layer":  # layer wise largest-values criterion
+        grad_update = copy.deepcopy(grad_update)
+
+        mask_percentile = max(0, mask_percentile)
+        for i, layer in enumerate(grad_update):
+            layer_mod = layer.data.view(-1).abs()
+            if mask_percentile is not None:
+                mask_order = math.ceil(len(layer_mod) * mask_percentile)
+
+            if mask_order == 0:
+                grad_update[i].data = torch.zeros(layer.data.shape, device=layer.device)
+            else:
+                topk, indices = torch.topk(
+                    layer_mod, min(mask_order, len(layer_mod) - 1)
+                )
+                grad_update[i].data[layer.data.abs() < topk[-1]] = 0
+        return grad_update
