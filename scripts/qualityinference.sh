@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -S /bin/bash
-# #$ -q pascal_short.q
+#$ -q pascal_short.q
 
 set -ex
 
@@ -28,7 +28,7 @@ round() {
 }
 
 # 1. MNIST standalone FedAvg
-cd ../src/rffl
+cd ../src/qualityinference
 
 start_time=`date +%s`
 
@@ -36,20 +36,16 @@ python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
 --data_dir ../../data/label_flip \
---model lr \
+--model nn \
 --partition_method hetero  \
---client_num_in_total 200 \
---client_num_per_round 200 \
+--client_num_in_total 1000 \
+--client_num_per_round 100 \
 --comm_round 200 \
---epochs 3 \
+--epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
---lr 0.15 \
---ci 0 \
---agg_weight 1 \
---gamma 0.35 \
---use_sparsify \
---use_reputation
+--lr 0.03 \
+--ci 0
 
 end_time=`date +%s`
 run_time=$((end_time - start_time))
