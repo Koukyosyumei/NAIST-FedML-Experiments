@@ -45,8 +45,8 @@ class RFFLAPI(FedAvgAPI):
 
         self.R_set = list(range(args.client_num_in_total))
 
-        self.use_sparsify = False
-        self.use_reputation = False
+        self.use_sparsify = True
+        self.use_reputation = True
         self.threshold = 1 / (3 * args.client_num_in_total)
         self.warm_up = 10
         self.alpha = 0.95
@@ -106,12 +106,12 @@ class RFFLAPI(FedAvgAPI):
                 # 前回のラウンドで計算したgradientで、パラメータを更新
                 if round_idx > 0:
                     client.download(client_idx_to_reward_gradients[client_idx])
+                # 学習
+                grad = client.train()
                 # 更新したパラメータを保存
                 self.client_idx_to_statedict[
                     client_idx
                 ] = client.model_trainer.get_model_params()
-                # 学習
-                grad = client.train()
                 gradient_locals[client_idx] = grad
 
             # update global weights
@@ -128,12 +128,11 @@ class RFFLAPI(FedAvgAPI):
                 else:
                     self._local_test_on_all_clients(round_idx)
 
-            """
             sim_credibility = spearmanr(
                 self.rs.to("cpu").detach().numpy(), self.true_credibility
             )[0]
             wandb.log({"Credibility/Spearmanr": sim_credibility, "round": round_idx})
-            """
+            wandb.log({"Clients/R_set": len(self.R_set), "round": round_idx})
 
     def _aggregate(self, grad_locals, round_idx):
         """Aggerate the gradients sent by the clients
@@ -192,13 +191,13 @@ class RFFLAPI(FedAvgAPI):
             self.past_phis.append(phis)
 
             # remove the unuseful cilents
-            self.rs = torch.div(self.rs, self.rs.sum())
+            # self.rs = torch.div(self.rs, self.rs.sum())
             if round_idx > self.warm_up:
                 for client_idx in self.R_set:
                     if self.rs[client_idx] < curr_threshold:
                         self.rs[client_idx] = 0
                         self.R_set.remove(client_idx)
-            self.rs = torch.div(self.rs, self.rs.sum())
+            # self.rs = torch.div(self.rs, self.rs.sum())
 
             self.r_threshold.append(self.threshold * (1.0 / len(self.R_set)))
             q_ratios = torch.div(self.rs, torch.max(self.rs))

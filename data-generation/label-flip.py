@@ -38,7 +38,7 @@ if __name__ == "__main__":
     for i, idx in enumerate(cdata["users"]):
         temp_array = np.array(cdata["user_data"][idx]["y"])
         data_size = len(temp_array)
-        flip_size = int(data_size * (i + 1) / num_user)
+        flip_size = int(0.3 * data_size * (i + 1) / num_user)
         temp_array[np.random.randint(0, data_size, (flip_size))] = np.random.randint(
             0, 10, (flip_size)
         )

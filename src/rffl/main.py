@@ -59,6 +59,7 @@ from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
     MyModelTrainer as MyModelTrainerTAG,
 )
 
+from model import MyNet
 from rffl_api import RFFLAPI
 from rffl_trainer import RFFL_ModelTrainer
 
@@ -541,9 +542,9 @@ if __name__ == "__main__":
     model_trainer = custom_model_trainer(args, model)
     logging.info(model)
 
-    # with open(f"{args.data_dir}/credibility_train_label_fliped.pickle", "rb") as f:
-    #    true_credibility = pickle.load(f)
-    true_credibility = None  # true_credibility[: args.client_num_in_total]
+    with open(f"{args.data_dir}/credibility_train_label_fliped.pickle", "rb") as f:
+        true_credibility = pickle.load(f)
+    true_credibility = true_credibility[: args.client_num_in_total]
 
     # with open(f"{args.data_dir}/X_server.pickle", "rb") as inf:
     #    X_server = torch.Tensor(pickle.load(inf))
