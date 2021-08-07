@@ -11,42 +11,51 @@ import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
-from fedml_api.data_preprocessing.cifar10.data_loader import \
-    load_partition_data_cifar10
-from fedml_api.data_preprocessing.cifar100.data_loader import \
-    load_partition_data_cifar100
-from fedml_api.data_preprocessing.cinic10.data_loader import \
-    load_partition_data_cinic10
-from fedml_api.data_preprocessing.fed_cifar100.data_loader import \
-    load_partition_data_federated_cifar100
-from fedml_api.data_preprocessing.fed_shakespeare.data_loader import \
-    load_partition_data_federated_shakespeare
-from fedml_api.data_preprocessing.FederatedEMNIST.data_loader import \
-    load_partition_data_federated_emnist
-from fedml_api.data_preprocessing.ImageNet.data_loader import \
-    load_partition_data_ImageNet
-from fedml_api.data_preprocessing.Landmarks.data_loader import \
-    load_partition_data_landmarks
-from fedml_api.data_preprocessing.MNIST.data_loader import \
-    load_partition_data_mnist
-from fedml_api.data_preprocessing.shakespeare.data_loader import \
-    load_partition_data_shakespeare
-from fedml_api.data_preprocessing.stackoverflow_lr.data_loader import \
-    load_partition_data_federated_stackoverflow_lr
-from fedml_api.data_preprocessing.stackoverflow_nwp.data_loader import \
-    load_partition_data_federated_stackoverflow_nwp
+from fedml_api.data_preprocessing.cifar10.data_loader import load_partition_data_cifar10
+from fedml_api.data_preprocessing.cifar100.data_loader import (
+    load_partition_data_cifar100,
+)
+from fedml_api.data_preprocessing.cinic10.data_loader import load_partition_data_cinic10
+from fedml_api.data_preprocessing.fed_cifar100.data_loader import (
+    load_partition_data_federated_cifar100,
+)
+from fedml_api.data_preprocessing.fed_shakespeare.data_loader import (
+    load_partition_data_federated_shakespeare,
+)
+from fedml_api.data_preprocessing.FederatedEMNIST.data_loader import (
+    load_partition_data_federated_emnist,
+)
+from fedml_api.data_preprocessing.ImageNet.data_loader import (
+    load_partition_data_ImageNet,
+)
+from fedml_api.data_preprocessing.Landmarks.data_loader import (
+    load_partition_data_landmarks,
+)
+from fedml_api.data_preprocessing.MNIST.data_loader import load_partition_data_mnist
+from fedml_api.data_preprocessing.shakespeare.data_loader import (
+    load_partition_data_shakespeare,
+)
+from fedml_api.data_preprocessing.stackoverflow_lr.data_loader import (
+    load_partition_data_federated_stackoverflow_lr,
+)
+from fedml_api.data_preprocessing.stackoverflow_nwp.data_loader import (
+    load_partition_data_federated_stackoverflow_nwp,
+)
 from fedml_api.model.cv.cnn import CNN_DropOut
 from fedml_api.model.cv.mobilenet import mobilenet
 from fedml_api.model.cv.resnet import resnet56
 from fedml_api.model.cv.resnet_gn import resnet18
 from fedml_api.model.linear.lr import LogisticRegression
 from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
-from fedml_api.standalone.fedavg.my_model_trainer_classification import \
-    MyModelTrainer as MyModelTrainerCLS
-from fedml_api.standalone.fedavg.my_model_trainer_nwp import \
-    MyModelTrainer as MyModelTrainerNWP
-from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import \
-    MyModelTrainer as MyModelTrainerTAG
+from fedml_api.standalone.fedavg.my_model_trainer_classification import (
+    MyModelTrainer as MyModelTrainerCLS,
+)
+from fedml_api.standalone.fedavg.my_model_trainer_nwp import (
+    MyModelTrainer as MyModelTrainerNWP,
+)
+from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
+    MyModelTrainer as MyModelTrainerTAG,
+)
 from fedprof_api import FedProfAPI
 from model import MyNet
 
@@ -502,7 +511,7 @@ if __name__ == "__main__":
 
     wandb.init(
         project="fedml",
-        name="FedAVG-r"
+        name="QualityInference-r"
         + str(args.comm_round)
         + "-e"
         + str(args.epochs)
