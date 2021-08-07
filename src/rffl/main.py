@@ -48,10 +48,6 @@ from fedml_api.model.cv.resnet import resnet56
 from fedml_api.model.cv.resnet_gn import resnet18
 from fedml_api.model.linear.lr import LogisticRegression
 from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
-from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
-from fedml_api.standalone.fedavg.my_model_trainer_classification import (
-    MyModelTrainer as MyModelTrainerCLS,
-)
 from fedml_api.standalone.fedavg.my_model_trainer_nwp import (
     MyModelTrainer as MyModelTrainerNWP,
 )
@@ -221,7 +217,7 @@ def load_data(args, dataset_name):
             test_path=args.data_dir + "/test",
         )
         """
-        For shallow NN or linear models, 
+        For shallow NN or linear models,
         we uniformly sample a fraction of clients each round (as the original FedAvg paper)
         """
         args.client_num_in_total = client_num

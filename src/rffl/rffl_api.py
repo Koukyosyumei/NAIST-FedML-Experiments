@@ -1,18 +1,10 @@
-import copy
-import glob
 import logging
-import math
 import os
-import random
 import sys
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 from scipy.stats import spearmanr
-from sklearn.ensemble import IsolationForest
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
-from torch import nn
 
 import wandb
 
@@ -87,7 +79,7 @@ class RFFLAPI(FedAvgAPI):
 
             """
             for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
-            Instead of changing the 'Client' instances, our implementation keeps the 'Client' instances and then updates their local dataset 
+            Instead of changing the 'Client' instances, our implementation keeps the 'Client' instances and then updates their local dataset
             """
             logging.info("client_indexes = " + str(self.R_set))
 
@@ -191,13 +183,13 @@ class RFFLAPI(FedAvgAPI):
             self.past_phis.append(phis)
 
             # remove the unuseful cilents
-            # self.rs = torch.div(self.rs, self.rs.sum())
+            self.rs = torch.div(self.rs, self.rs.sum())
             if round_idx > self.warm_up:
                 for client_idx in self.R_set:
                     if self.rs[client_idx] < curr_threshold:
                         self.rs[client_idx] = 0
                         self.R_set.remove(client_idx)
-            # self.rs = torch.div(self.rs, self.rs.sum())
+            self.rs = torch.div(self.rs, self.rs.sum())
 
             self.r_threshold.append(self.threshold * (1.0 / len(self.R_set)))
             q_ratios = torch.div(self.rs, torch.max(self.rs))
@@ -222,5 +214,12 @@ class RFFLAPI(FedAvgAPI):
 
             else:
                 reward_gradients[client_idx] = aggregated_gradient
+
+            for client_idx, reward_gradient in reward_gradients.items():
+                for grad_1, grad_2 in zip(reward_gradient, grad_locals[client_idx][1]):
+                    if round_idx == 0:
+                        grad_1.data -= grad_2.data * relative_sizes[client_idx]
+                    else:
+                        grad_1.data -= grad_2.data * self.rs[client_idx]
 
         return reward_gradients

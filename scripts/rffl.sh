@@ -46,7 +46,7 @@ python3 ./main.py \
 --client_optimizer sgd \
 --lr 0.03 \
 --ci 0 \
---agg_weight 0.15 \
+--agg_weight 0.1 \
 --gamma 0.5 \
 --use_sparsify \
 --use_reputation
