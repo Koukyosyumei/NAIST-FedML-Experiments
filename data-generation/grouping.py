@@ -59,7 +59,7 @@ def add_args(parser):
         type=str,
         default="/work/hideaki-t/dev/NAIST-Experiments/data/grouped",
         metavar="O",
-        help="input_path",
+        help="output_path",
     )
 
     parser.add_argument(

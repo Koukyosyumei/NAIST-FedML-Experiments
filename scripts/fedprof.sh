@@ -27,9 +27,28 @@ round() {
   printf "%.${2}f" "${1}"
 }
 
+# 0. prepare data
+
+cd ../data-generation
+
+echo "grouping data"
+python3 ./grouping.py \
+--input_dir /work/hideaki-t/dev/FedML/data/MNIST \
+--output_dir /work/hideaki-t/dev/NAIST-Experiments/data/grouped \
+--group_size 50
+
+echo "flip label"
+python3 ./label-flip.py \
+--input_dir /work/hideaki-t/dev/NAIST-Experiments/data/grouped \
+--output_dir /work/hideaki-t/dev/NAIST-Experiments/data/label_flip \
+--flip_ratio 0.3
+
+
+
 # 1. MNIST standalone FedAvg
 cd ../src/fedprof
 
+echo "start FedProf"
 start_time=`date +%s`
 
 python3 ./main.py \
