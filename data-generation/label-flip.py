@@ -55,12 +55,14 @@ if __name__ == "__main__":
     print("num user: ", num_user)
     # print(cdata["users"])
 
-    with open(args.output_dir + "/X_server.pickle", "wb") as inf:
-        pickle.dump(cdata["user_data"]["f_00000"]["x"], inf)
-    with open(args.output_dir + "/y_server.pickle", "wb") as inf:
-        pickle.dump(cdata["user_data"]["f_00000"]["y"], inf)
+    front_user_id = "f_00000" if "f_00000" in cdata["user_data"] else "fagg_0"
 
-    cdata["user_data"].pop("f_00000")
+    with open(args.output_dir + "/X_server.pickle", "wb") as inf:
+        pickle.dump(cdata["user_data"][front_user_id]["x"], inf)
+    with open(args.output_dir + "/y_server.pickle", "wb") as inf:
+        pickle.dump(cdata["user_data"][front_user_id]["y"], inf)
+
+    cdata["user_data"].pop(front_user_id)
     cdata["users"] = cdata["users"][1:]
     cdata["num_samples"] = cdata["num_samples"][1:]
     cdata["quality"] = []
@@ -92,7 +94,7 @@ if __name__ == "__main__":
         "r",
     ) as inf:
         cdata = json.load(inf)
-    cdata["user_data"].pop("f_00000")
+    cdata["user_data"].pop(front_user_id)
     cdata["users"] = cdata["users"][1:]
     cdata["num_samples"] = cdata["num_samples"][1:]
     cdata["quality"] = []
