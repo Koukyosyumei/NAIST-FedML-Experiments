@@ -1,22 +1,17 @@
 import copy
-import glob
 import logging
-import math
 import os
-import random
 import sys
 
 import numpy as np
 import torch
 import wandb
 from scipy.stats import spearmanr
-from sklearn.ensemble import IsolationForest
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score
 from torch import nn
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
-from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
 
@@ -39,12 +34,6 @@ class QualityInferenceAPI(FedAvgAPI):
         self.criterion = nn.CrossEntropyLoss()
         self.alpha = args.alpha
         self.device = device
-        """
-        self.validation_model = copy.deepcopy(self.model_trainer.model)
-        self.validation_optimizer = torch.optim.SGD(
-            self.validation_model.parameters(), lr=self.args.lr
-        )
-        """
 
     def train(self):
         w_global = self.model_trainer.get_model_params()
@@ -103,11 +92,9 @@ class QualityInferenceAPI(FedAvgAPI):
 
             # server side test
             score_prev = score_curr
-            entropy_prev = entropy_curr
+            # entropy_prev = entropy_curr
 
-            score_curr, loss_curr, entropy_curr = self._server_test(
-                self.X_server, self.y_server
-            )
+            score_curr, loss_curr = self._server_test(self.X_server, self.y_server)
 
             score_improve_prev = score_improve_curr
             score_improve_curr = score_curr - score_prev if round_idx > 0 else 0
@@ -125,31 +112,10 @@ class QualityInferenceAPI(FedAvgAPI):
 
             prev_client_indexes = copy.deepcopy(client_indexes)
 
-    """"
-    def _client_sampling(self, round_idx, client_num_in_total, client_num_per_round):
-        if client_num_in_total == client_num_per_round:
-            client_indexes = [
-                client_index for client_index in range(client_num_in_total)
-            ]
-        else:
-            num_clients = min(client_num_per_round, client_num_in_total)
-            np.random.seed(
-                round_idx
-            )  # make sure for each comparison, we are selecting the same clients each round
-            client_indexes = np.random.choice(
-                range(client_num_in_total),
-                num_clients,
-                replace=False,
-                p=self.pred_credibility / np.sum(self.pred_credibility),
-            )
-        logging.info("client_indexes = %s" % str(client_indexes))
-        return client_indexes
-    """
-
     def _server_test(self, X_val, y_val, func=accuracy_score):
         y_pred = self.model_trainer.model(X_val).cpu().detach()
-        entropy = ((-math.e ** y_pred) * y_pred).sum(axis=1).mean()
+        # entropy = ((-math.e ** y_pred) * y_pred).sum(axis=1).mean()
         _, predicted = torch.max(y_pred, 1)
         score = accuracy_score(predicted.detach().numpy(), y_val.detach().numpy())
         loss = self.criterion(y_pred, y_val.to(int))
-        return score.item(), loss.item(), entropy.item()
+        return score.item(), loss.item()

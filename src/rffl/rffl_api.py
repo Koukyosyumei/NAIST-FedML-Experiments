@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import sys
@@ -104,6 +105,7 @@ class RFFLAPI(FedAvgAPI):
                 self.client_idx_to_statedict[
                     client_idx
                 ] = client.model_trainer.get_model_params()
+                # upload
                 gradient_locals[client_idx] = grad
 
             # update global weights
@@ -181,9 +183,10 @@ class RFFLAPI(FedAvgAPI):
                     + (1 - self.alpha) * phis[client_idx]
                 )
             self.past_phis.append(phis)
+            self.rs = torch.div(self.rs, self.rs.sum())
 
             # remove the unuseful cilents
-            self.rs = torch.div(self.rs, self.rs.sum())
+
             if round_idx > self.warm_up:
                 for client_idx in self.R_set:
                     if self.rs[client_idx] < curr_threshold:
@@ -215,11 +218,86 @@ class RFFLAPI(FedAvgAPI):
             else:
                 reward_gradients[client_idx] = aggregated_gradient
 
-            for client_idx, reward_gradient in reward_gradients.items():
-                for grad_1, grad_2 in zip(reward_gradient, grad_locals[client_idx][1]):
-                    if round_idx == 0:
-                        grad_1.data -= grad_2.data * relative_sizes[client_idx]
-                    else:
-                        grad_1.data -= grad_2.data * self.rs[client_idx]
+            for grad_1, grad_2 in zip(
+                reward_gradients[client_idx], grad_locals[client_idx][1]
+            ):
+                if round_idx == 0:
+                    grad_1.data -= grad_2.data * relative_sizes[client_idx]
+                else:
+                    grad_1.data -= grad_2.data * self.rs[client_idx]
 
         return reward_gradients
+
+    def _local_test_on_all_clients(self, round_idx):
+
+        logging.info("################local_test_on_all_clients : {}".format(round_idx))
+
+        train_metrics = {"num_samples": [], "num_correct": [], "losses": []}
+
+        test_metrics = {"num_samples": [], "num_correct": [], "losses": []}
+
+        client = self.client_list[0]
+
+        for client_idx in self.R_set:
+            """
+            Note: for datasets like "fed_CIFAR100" and "fed_shakespheare",
+            the training client number is larger than the testing client number
+            """
+            if self.test_data_local_dict[client_idx] is None:
+                continue
+            client.update_local_dataset(
+                0,
+                self.train_data_local_dict[client_idx],
+                self.test_data_local_dict[client_idx],
+                self.train_data_local_num_dict[client_idx],
+            )
+            # train data
+            train_local_metrics = client.local_test(False)
+            train_metrics["num_samples"].append(
+                copy.deepcopy(train_local_metrics["test_total"])
+            )
+            train_metrics["num_correct"].append(
+                copy.deepcopy(train_local_metrics["test_correct"])
+            )
+            train_metrics["losses"].append(
+                copy.deepcopy(train_local_metrics["test_loss"])
+            )
+
+            # test data
+            test_local_metrics = client.local_test(True)
+            test_metrics["num_samples"].append(
+                copy.deepcopy(test_local_metrics["test_total"])
+            )
+            test_metrics["num_correct"].append(
+                copy.deepcopy(test_local_metrics["test_correct"])
+            )
+            test_metrics["losses"].append(
+                copy.deepcopy(test_local_metrics["test_loss"])
+            )
+
+            """
+            Note: CI environment is CPU-based computing. 
+            The training speed for RNN training is to slow in this setting, so we only test a client to make sure there is no programming error.
+            """
+            if self.args.ci == 1:
+                break
+
+        # test on training dataset
+        train_acc = sum(train_metrics["num_correct"]) / sum(
+            train_metrics["num_samples"]
+        )
+        train_loss = sum(train_metrics["losses"]) / sum(train_metrics["num_samples"])
+
+        # test on test dataset
+        test_acc = sum(test_metrics["num_correct"]) / sum(test_metrics["num_samples"])
+        test_loss = sum(test_metrics["losses"]) / sum(test_metrics["num_samples"])
+
+        stats = {"training_acc": train_acc, "training_loss": train_loss}
+        wandb.log({"Train/Acc": train_acc, "round": round_idx})
+        wandb.log({"Train/Loss": train_loss, "round": round_idx})
+        logging.info(stats)
+
+        stats = {"test_acc": test_acc, "test_loss": test_loss}
+        wandb.log({"Test/Acc": test_acc, "round": round_idx})
+        wandb.log({"Test/Loss": test_loss, "round": round_idx})
+        logging.info(stats)
