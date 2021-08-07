@@ -17,14 +17,12 @@ from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelT
 class RFFL_ModelTrainer(MyModelTrainer):
     def get_model_gradients(self, gamma=0.5):
         grads = self.grads
-        """
         flattened = flatten(grads)
         norm_value = norm(flattened) + 1e-7  # to prevent division by zero
         grads = unflatten(
             torch.multiply(torch.tensor(gamma), torch.div(flattened, norm_value)),
             grads,
         )
-        """
         return grads
 
     def set_model_gradients(self, gradient, device, weight=0.00015):
@@ -65,7 +63,7 @@ class RFFL_ModelTrainer(MyModelTrainer):
                 loss = criterion(log_probs, labels)
                 loss.backward()
 
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
+                # torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
 
                 optimizer.step()
 

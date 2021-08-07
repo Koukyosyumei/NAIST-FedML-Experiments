@@ -168,6 +168,23 @@ def add_args(parser):
         help="the frequency of the algorithms",
     )
 
+    parser.add_argument(
+        "--agg_weight",
+        type=float,
+        default=0.15,
+        help="weight for aggregated gradient",
+    )
+
+    parser.add_argument(
+        "--gamma",
+        type=float,
+        default=0.5,
+        help="gamma",
+    )
+
+    parser.add_argument("--use_sparsify", action="store_true")
+    parser.add_argument("--use_reputation", action="store_true")
+
     parser.add_argument("--gpu", type=int, default=0, help="gpu")
 
     parser.add_argument("--ci", type=int, default=0, help="CI")

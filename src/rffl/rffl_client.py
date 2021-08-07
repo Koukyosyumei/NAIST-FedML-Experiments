@@ -13,8 +13,10 @@ class RFFL_Client(Client):
         self.model_trainer.train(
             self.local_training_data, self.device, self.local_sample_number, self.args
         )
-        grad_local = self.model_trainer.get_model_gradients()
+        grad_local = self.model_trainer.get_model_gradients(gamma=self.args.gamma)
         return (self.local_sample_number, grad_local)
 
     def download(self, grad_global):
-        self.model_trainer.set_model_gradients(grad_global, self.device)
+        self.model_trainer.set_model_gradients(
+            grad_global, self.device, weight=self.args.agg_weight
+        )

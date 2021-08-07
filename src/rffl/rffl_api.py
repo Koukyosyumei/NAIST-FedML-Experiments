@@ -45,8 +45,8 @@ class RFFLAPI(FedAvgAPI):
 
         self.R_set = list(range(args.client_num_in_total))
 
-        self.use_sparsify = True
-        self.use_reputation = True
+        self.use_sparsify = args.use_sparsify
+        self.use_reputation = args.use_reputation
         self.threshold = 1 / (3 * args.client_num_in_total)
         self.warm_up = 10
         self.alpha = 0.95
