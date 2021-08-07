@@ -27,6 +27,25 @@ round() {
   printf "%.${2}f" "${1}"
 }
 
+# 0. prepare data
+
+cd ../data-generation
+
+rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/train/*.json
+rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/test/*.json
+
+echo "grouping data"
+python3 ./grouping.py \
+--input_dir /work/hideaki-t/dev/FedML/data/MNIST \
+--output_dir /work/hideaki-t/dev/NAIST-Experiments/data/grouped \
+--group_size 20
+
+echo "flip label"
+python3 ./label-flip.py \
+--input_dir /work/hideaki-t/dev/NAIST-Experiments/data/grouped \
+--output_dir /work/hideaki-t/dev/NAIST-Experiments/data/label_flip \
+--flip_ratio 0.3
+
 # 1. MNIST standalone FedAvg
 cd ../src/rffl
 
@@ -38,8 +57,8 @@ python3 ./main.py \
 --data_dir ../../data/label_flip \
 --model lr \
 --partition_method hetero  \
---client_num_in_total 200 \
---client_num_per_round 200 \
+--client_num_in_total 49 \
+--client_num_per_round 49 \
 --comm_round 200 \
 --epochs 3 \
 --batch_size 10 \
