@@ -31,8 +31,10 @@ round() {
 
 cd ../data-generation
 
-rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/train/*.json
-rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/test/*.json
+if [ -e "/work/hideaki-t/dev/NAIST-Experiments/data/grouped/*/*.json" ]; then
+  rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/train/*.json
+  rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/test/*.json
+fi
 
 echo "grouping data"
 python3 ./grouping.py \
