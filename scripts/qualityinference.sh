@@ -57,7 +57,7 @@ python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
 --data_dir ../../data/label_flip \
---model nn \
+--model lr \
 --partition_method hetero  \
 --client_num_in_total 49 \
 --client_num_per_round 5 \

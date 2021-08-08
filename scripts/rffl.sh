@@ -62,15 +62,15 @@ python3 ./main.py \
 --client_num_in_total 49 \
 --client_num_per_round 49 \
 --comm_round 200 \
---epochs 3 \
+--epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
---lr 0.15 \
+--lr 0.03 \
 --ci 0 \
 --agg_weight 1 \
---gamma 0.35 \
---use_sparsify \
---use_reputation
+--gamma 0.3
+# --use_sparsify \
+# --use_reputation
 
 end_time=`date +%s`
 run_time=$((end_time - start_time))

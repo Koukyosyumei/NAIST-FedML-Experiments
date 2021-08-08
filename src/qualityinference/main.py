@@ -56,10 +56,8 @@ from fedml_api.standalone.fedavg.my_model_trainer_nwp import (
 from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
     MyModelTrainer as MyModelTrainerTAG,
 )
-from fedprof_api import FedProfAPI
-from model import MyNet
 
-from qualityinference import QualityInferenceAPI
+from qualityinference_api import QualityInferenceAPI
 
 
 def add_args(parser):
@@ -482,8 +480,8 @@ def create_model(args, model_name, output_dim):
         model = resnet56(class_num=output_dim)
     elif model_name == "mobilenet":
         model = mobilenet(class_num=output_dim)
-    elif model_name == "nn":
-        model = MyNet()
+    # elif model_name == "nn":
+    #    model = MyNet()
     return model
 
 

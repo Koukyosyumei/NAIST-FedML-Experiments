@@ -5,10 +5,11 @@ import sys
 
 import numpy as np
 import torch
-import wandb
 from scipy.stats import spearmanr
 from sklearn.metrics import accuracy_score
 from torch import nn
+
+import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
@@ -32,7 +33,6 @@ class QualityInferenceAPI(FedAvgAPI):
         self.true_credibility = true_credibility
         self.pred_credibility = np.array([0.0] * self.args.client_num_in_total)
         self.criterion = nn.CrossEntropyLoss()
-        self.alpha = args.alpha
         self.device = device
 
     def train(self):
@@ -113,9 +113,13 @@ class QualityInferenceAPI(FedAvgAPI):
             prev_client_indexes = copy.deepcopy(client_indexes)
 
     def _server_test(self, X_val, y_val, func=accuracy_score):
-        y_pred = self.model_trainer.model(X_val).cpu().detach()
-        # entropy = ((-math.e ** y_pred) * y_pred).sum(axis=1).mean()
-        _, predicted = torch.max(y_pred, 1)
-        score = accuracy_score(predicted.detach().numpy(), y_val.detach().numpy())
-        loss = self.criterion(y_pred, y_val.to(int))
+        with torch.no_grad():
+            self.model_trainer.model.to(self.device)
+            y_pred = self.model_trainer.model(X_val.to(self.device))
+            # entropy = ((-math.e ** y_pred) * y_pred).sum(axis=1).mean()
+            _, predicted = torch.max(y_pred, 1)
+            score = accuracy_score(
+                predicted.to("cpu").detach().numpy(), y_val.to("cpu").detach().numpy()
+            )
+            loss = self.criterion(y_pred, y_val.to(self.device).to(int))
         return score.item(), loss.item()

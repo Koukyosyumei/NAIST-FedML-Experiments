@@ -154,17 +154,23 @@ class RFFLAPI(FedAvgAPI):
         if not self.use_reputation:
             # fedavg
             for client_idx, (local_sample_number, gradient) in grad_locals.items():
-                for grad_1, grad_2 in zip(aggregated_gradient, gradient):
-                    grad_1.data += grad_2.data * relative_sizes[client_idx]
+                for grad_idx in range(len(aggregated_gradient)):
+                    aggregated_gradient[grad_idx].data += (
+                        gradient[grad_idx].data * relative_sizes[client_idx]
+                    )
 
         else:
             # Aggregation
             for client_idx, (_, gradient) in grad_locals.items():
-                for grad_1, grad_2 in zip(aggregated_gradient, gradient):
+                for grad_idx in range(len(aggregated_gradient)):
                     if round_idx == 0:
-                        grad_1.data += grad_2.data * relative_sizes[client_idx]
+                        aggregated_gradient[grad_idx].data += (
+                            gradient[grad_idx].data * relative_sizes[client_idx]
+                        )
                     else:
-                        grad_1.data += grad_2.data * self.rs[client_idx]
+                        aggregated_gradient[grad_idx].data += (
+                            gradient[grad_idx].data * self.rs[client_idx]
+                        )
             flat_aggre_grad = flatten(aggregated_gradient)
 
             # culculate the reputations
@@ -218,13 +224,18 @@ class RFFLAPI(FedAvgAPI):
             else:
                 reward_gradients[client_idx] = aggregated_gradient
 
-            for grad_1, grad_2 in zip(
-                reward_gradients[client_idx], grad_locals[client_idx][1]
-            ):
-                if round_idx == 0:
-                    grad_1.data -= grad_2.data * relative_sizes[client_idx]
+            for grad_idx in range(len(reward_gradients[client_idx])):
+                if round_idx == 0 or not self.use_reputation:
+                    reward_gradients[client_idx][grad_idx].data -= (
+                        grad_locals[client_idx][1][grad_idx].data
+                        * relative_sizes[client_idx]
+                    )
                 else:
-                    grad_1.data -= grad_2.data * self.rs[client_idx]
+                    reward_gradients[client_idx][grad_idx].data -= (
+                        grad_locals[client_idx][1][grad_idx].data * self.rs[client_idx]
+                    )
+
+        logging.info(reward_gradients)
 
         return reward_gradients
 
