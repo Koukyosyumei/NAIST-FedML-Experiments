@@ -63,7 +63,7 @@ python3 ./main.py \
 --model nn \
 --partition_method hetero  \
 --client_num_in_total 49 \
---client_num_per_round 5 \
+--client_num_per_round 49 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \

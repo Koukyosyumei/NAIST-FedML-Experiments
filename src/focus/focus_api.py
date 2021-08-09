@@ -1,22 +1,19 @@
 import copy
-import glob
 import logging
 import math
 import os
-import random
 import sys
 
 import numpy as np
 import torch
-import wandb
 from scipy.stats import spearmanr
-from sklearn.ensemble import IsolationForest
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score
 from torch import nn
+
+import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
-from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 
 
@@ -56,9 +53,6 @@ class FOCUSAPI(FedAvgAPI):
 
             w_locals = []
 
-            sim_credibility = spearmanr(self.pred_credibility, self.true_credibility)[0]
-            wandb.log({"Credibility/Spearmanr": sim_credibility, "round": round_idx})
-
             """
             for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
             Instead of changing the 'Client' instances, our implementation keeps the 'Client' instances and then updates their local dataset
@@ -83,7 +77,9 @@ class FOCUSAPI(FedAvgAPI):
                 # self.logger.info("local weights = " + str(w))
                 w_locals.append((client.get_sample_number(), copy.deepcopy(w)))
 
-            lskt = self._local_test_on_server_data(w_locals, self.X_val, self.y_val)
+            lskt = self._local_test_on_server_data(
+                w_locals, self.X_server, self.y_server
+            )
 
             # update global weights
             w_global = self._aggregate(w_locals)
@@ -100,12 +96,17 @@ class FOCUSAPI(FedAvgAPI):
                 else:
                     train_metrics = self._local_test_on_all_clients(round_idx)
 
-            llkt = train_metrics["losses"] / train_metrics["num_samples"]
+            llkt = np.array(train_metrics["losses"]) / np.array(
+                train_metrics["num_samples"]
+            )
 
             ekt = lskt + llkt
-            self.pred_credibility = 1 - (math.e ** (self.alpha * ekt)) / np.sum(
+            self.pred_credibility[client_indexes] = 1 - (
                 math.e ** (self.alpha * ekt)
-            )
+            ) / np.sum(math.e ** (self.alpha * ekt))
+
+            sim_credibility = spearmanr(self.pred_credibility, self.true_credibility)[0]
+            wandb.log({"Credibility/Spearmanr": sim_credibility, "round": round_idx})
 
     def _local_test_on_all_clients(self, round_idx):
 
@@ -155,7 +156,7 @@ class FOCUSAPI(FedAvgAPI):
             )
 
             """
-            Note: CI environment is CPU-based computing. 
+            Note: CI environment is CPU-based computing.
             The training speed for RNN training is to slow in this setting, so we only test a client to make sure there is no programming error.
             """
             if self.args.ci == 1:
@@ -186,7 +187,7 @@ class FOCUSAPI(FedAvgAPI):
     def _local_test_on_server_data(self, w_locals, X_val, y_val, func=accuracy_score):
         ls = []
         for w in w_locals:
-            self.model_trainer.set_model_params(w)
+            self.model_trainer.set_model_params(w[1])
 
             with torch.no_grad():
                 self.model_trainer.model.to(self.device)
@@ -197,4 +198,4 @@ class FOCUSAPI(FedAvgAPI):
 
             ls.append(loss.item())
 
-        return ls
+        return np.array(ls)
