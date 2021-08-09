@@ -64,13 +64,11 @@ python3 ./main.py \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
---client_optimizer sgd \
---lr 0.03 \
+--client_optimizer adam \
+--lr 0.0001 \
 --ci 0 \
 --agg_weight 1 \
---gamma 0.3
-# --use_sparsify \
-# --use_reputation
+--gamma 0.5
 
 end_time=`date +%s`
 run_time=$((end_time - start_time))
