@@ -35,10 +35,10 @@
 | RFFL  | Similarity |       〇       |  不要   |   必要   |            [here](https://arxiv.org/pdf/2011.10464v2.pdf)             |
 | FOCUS | Similarity |       ×       |  必要   |   必要   | [here](https://link.springer.com/chapter/10.1007/978-3-030-63076-8_8) |
 |FedProf|Similarity|×|必要|必要| [here](https://arxiv.org/abs/2102.01733) |
-|FPPDL|Similarity|||||
+|FPPDL|Similarity|〇|不要|不要|[here](https://arxiv.org/pdf/1906.01167.pdf)|
 |QI|Marginal Loss|〇|不要|必要| [here](https://arxiv.org/abs/2007.06236) |
 |F-RICE|Marginal Loss|〇|不要|必要| [here](https://ieeexplore.ieee.org/document/9425266)|
-|Shapely Value|Marginal Loss||||
+|Simple Influence|Marginal Loss|〇|不要|不要|[here]()|
 |FAIR|Test /Self-Reported|〇|不要|必要| [here](https://ieeexplore.ieee.org/document/9488743)|
 |FairFed|Test /Self-Reported|〇|不要|不要| [here](https://ieeexplore.ieee.org/document/9425266) |
 |STD_DAGMM|Parameter checking|〇|不要|必要| [here](https://arxiv.org/abs/1911.12560) |
