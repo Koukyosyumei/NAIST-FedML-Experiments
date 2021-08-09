@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -S /bin/bash
-# #$ -q pascal_short.q
+#$ -q pascal_short.q
 
 set -ex
 
@@ -48,29 +48,29 @@ python3 ./label-flip.py \
 --output_dir /work/hideaki-t/dev/NAIST-Experiments/data/label_flip \
 --flip_ratio 0.3
 
-# 1. MNIST standalone FedAvg
-cd ../src/rffl
 
+
+# 1. MNIST standalone FedAvg
+cd ../src/focus
+
+echo "start FOCUS"
 start_time=`date +%s`
 
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
 --data_dir ../../data/label_flip \
---model lr \
+--model nn \
 --partition_method hetero  \
 --client_num_in_total 49 \
---client_num_per_round 49 \
+--client_num_per_round 5 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
---client_optimizer adam \
---lr 0.00003 \
---ci 0 \
---agg_weight 1 \
---gamma 0.5 \
---use_sparsify \
---use_reputation
+--client_optimizer sgd \
+--lr 0.03 \
+--alpha 10 \
+--ci 0
 
 end_time=`date +%s`
 run_time=$((end_time - start_time))
