@@ -15,19 +15,21 @@ from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelT
 
 
 class RFFL_ModelTrainer(MyModelTrainer):
+    """
     def get_model_gradients(self, gamma=0.5):
         grads = self.grads
-        logging.info("before normalize")
-        logging.info(grads)
+        # logging.info("before normalize")
+        # logging.info(grads)
         flattened = flatten(grads)
         norm_value = norm(flattened) + 1e-7  # to prevent division by zero
         grads = unflatten(
             torch.multiply(torch.tensor(gamma), torch.div(flattened, norm_value)),
             grads,
         )
-        logging.info("after normalize")
-        logging.info(grads)
+        # logging.info("after normalize")
+        # logging.info(grads)
         return grads
+    """
 
     def set_model_gradients(self, gradient, device, weight=1):
         self.model.to(device)
@@ -45,10 +47,10 @@ class RFFL_ModelTrainer(MyModelTrainer):
         # train and update
         criterion = nn.CrossEntropyLoss().to(device)
         if args.client_optimizer == "sgd":
-            optimizer = torch.optim.SGD(self.model.parameters(), lr=args.lr)
+            optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
         else:
             optimizer = torch.optim.Adam(
-                filter(lambda p: p.requires_grad, self.model.parameters()),
+                filter(lambda p: p.requires_grad, model.parameters()),
                 lr=args.lr,
                 weight_decay=args.wd,
                 amsgrad=True,
@@ -61,15 +63,18 @@ class RFFL_ModelTrainer(MyModelTrainer):
             batch_loss = []
             for batch_idx, (x, labels) in enumerate(train_data):
                 x, labels = x.to(device), labels.to(device)
-                model.zero_grad()
+                # model.zero_grad()
+                optimizer.zero_grad()
 
-                log_probs = model(x / 255)
+                log_probs = model(x)
                 loss = criterion(log_probs, labels)
                 loss.backward()
 
-                # torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.gamma)
 
                 optimizer.step()
+
+                # logging.info("model update")
 
                 # logging.info('Update Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 #     epoch, (batch_idx + 1) * args.batch_size, len(train_data) * args.batch_size,
@@ -83,6 +88,5 @@ class RFFL_ModelTrainer(MyModelTrainer):
                 )
             )
 
-        self.grads = compute_grad_update(
-            old_model=backup, new_model=model, device=device
-        )
+        grads = compute_grad_update(old_model=backup, new_model=model)
+        return grads

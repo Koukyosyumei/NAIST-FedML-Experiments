@@ -55,7 +55,7 @@ from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
     MyModelTrainer as MyModelTrainerTAG,
 )
 
-from model import MyNet
+from model import CNN_Net, MyNet
 from rffl_api import RFFLAPI
 from rffl_trainer import RFFL_ModelTrainer
 
@@ -123,7 +123,7 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--wd", help="weight decay parameter;", type=float, default=0.001
+        "--wd", help="weight decay parameter;", type=float, default=0.0001
     )
 
     parser.add_argument(
@@ -523,6 +523,7 @@ if __name__ == "__main__":
     device = torch.device(
         "cuda:" + str(args.gpu) if torch.cuda.is_available() else "cpu"
     )
+    device = torch.device("cpu")
     logger.info(device)
 
     wandb.init(

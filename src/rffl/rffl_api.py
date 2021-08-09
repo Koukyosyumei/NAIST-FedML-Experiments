@@ -158,6 +158,8 @@ class RFFLAPI(FedAvgAPI):
                     aggregated_gradient[grad_idx].data += (
                         gradient[grad_idx].data * relative_sizes[client_idx]
                     )
+            logging.info("aggregated_gradient")
+            logging.info(aggregated_gradient)
 
         else:
             # Aggregation
@@ -172,6 +174,8 @@ class RFFLAPI(FedAvgAPI):
                             gradient[grad_idx].data * self.rs[client_idx]
                         )
             flat_aggre_grad = flatten(aggregated_gradient)
+            logging.info("flat_agg_grad")
+            logging.info(flat_aggre_grad)
 
             # culculate the reputations
             curr_threshold = self.threshold * (1.0 / len(self.R_set))
@@ -235,7 +239,8 @@ class RFFLAPI(FedAvgAPI):
                         grad_locals[client_idx][1][grad_idx].data * self.rs[client_idx]
                     )
 
-        logging.info(reward_gradients)
+        logging.info("rs")
+        logging.info(self.rs)
 
         return reward_gradients
 
