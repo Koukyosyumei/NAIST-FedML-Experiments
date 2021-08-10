@@ -33,12 +33,9 @@ class FreeRider_Client(Client):
         self.noise_amp = noise_amp
 
     def _generate_random_weight(self, weights_k):
-        a = weights_k.shape[0]
-        b = weights_k.shape[1]
         mi = torch.min(weights_k)
         ma = torch.max(weights_k)
-
-        return torch.FloatTensor(a, b).uniform_(mi, ma)
+        return torch.FloatTensor(weights_k.shape).uniform_(mi, ma)
 
     def train(self, w_global):
         self.model_trainer.set_model_params(w_global)
