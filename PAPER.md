@@ -42,7 +42,7 @@
 |[7] Simple Influence|Marginal Loss|〇|不要|必要|[here](https://ieeexplore.ieee.org/document/9006179)|
 |[8] FAIR|Test /Self-Reported|〇|不要|必要| [here](https://ieeexplore.ieee.org/document/9488743)|
 |[9] FairFed|Test /Self-Reported|〇|不要|不要| [here](https://ieeexplore.ieee.org/document/9425266) |
-|[10] STD_DAGMM|Parameter checking|〇|不要|必要| [here](https://arxiv.org/abs/1911.12560) |
+|[10] STD_DAGMM|Parameter checking|〇|不要|必要| [here](https://arxiv.org/abs/1911.12560) | [here](./src/autoencoder) |
 |[11] Spectral Anomaly Detection|Parameter checking|〇|不要|必要| [here](https://arxiv.org/abs/2002.00211) |
 
 - [1] A Reputation Mechanism Is All You Need: Collaborative Fairness and Adversarial Robustness in Federated Learning, ICML 2021
