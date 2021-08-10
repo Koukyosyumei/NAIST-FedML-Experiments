@@ -17,9 +17,9 @@
 クライアント間の類似度や、サーバーが持つ検証データとクライアントが持つデータの類似度を測定し、外れ値を検出する
 
 
-### D: Parameter checking Based Contribution Evaluation
+### D: ML Based Contribution Evaluation
 
-クライアントが送ってきたパラメータやgradientを、AutoEncoderなどの外れ値を検出するアルゴリズムにかけて、異常なクライアントを検出する
+クライアントが送ってきたパラメータやgradientを、AutoEncoderなどの外れ値を検出する機械学習アルゴリズムにかけて、異常なクライアントを検出する
 
 ## 実験の種類
 
@@ -42,8 +42,8 @@
 |[7] Simple Influence|Marginal Loss|〇|不要|必要|[here](https://ieeexplore.ieee.org/document/9006179)|
 |[8] FAIR|Test /Self-Reported|〇|不要|必要| [here](https://ieeexplore.ieee.org/document/9488743)|
 |[9] FairFed|Test /Self-Reported|〇|不要|不要| [here](https://ieeexplore.ieee.org/document/9425266) |
-|[10] STD_DAGMM|Parameter checking|〇|不要|必要| [here](https://arxiv.org/abs/1911.12560) | [here](./src/autoencoder) |
-|[11] Spectral Anomaly Detection|Parameter checking|〇|不要|必要| [here](https://arxiv.org/abs/2002.00211) |
+|[10] STD_DAGMM| ML |〇|不要|必要| [here](https://arxiv.org/abs/1911.12560) | [here](./src/autoencoder) |
+|[11] Spectral Anomaly Detection| ML |〇|不要|必要| [here](https://arxiv.org/abs/2002.00211) |
 
 - [1] A Reputation Mechanism Is All You Need: Collaborative Fairness and Adversarial Robustness in Federated Learning, ICML 2021
 
