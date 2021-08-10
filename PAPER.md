@@ -33,10 +33,10 @@
 | 手法  |    タイプ     | 悪意のあるクライアント | 補助データ | 中央サーバー |                                  URL                                  | 実装|
 |----|:----------:|:-------------:|:-----:|:------:|:---------------------------------------------------------------------:|:---:|
 |[1] RFFL  | Similarity |       〇       |  不要   |   必要   |            [here](https://arxiv.org/pdf/2011.10464v2.pdf)             | [here](./src/rffl/) |
-|[2] FOCUS | Similarity |       ×       |  必要   |   必要   | [here](https://link.springer.com/chapter/10.1007/978-3-030-63076-8_8) |
-|[3] FedProf|Similarity|×|必要|必要| [here](https://arxiv.org/abs/2102.01733) |
+|[2] FOCUS | Similarity |       ×       |  必要   |   必要   | [here](https://link.springer.com/chapter/10.1007/978-3-030-63076-8_8) | [here](./src/focus) |
+|[3] FedProf|Similarity|×|必要|必要| [here](https://arxiv.org/abs/2102.01733) | [here](./src/fedprof) |
 |[4] FPPDL|Similarity|〇|不要|不要|[here](https://arxiv.org/pdf/1906.01167.pdf)|
-|[5] QI|Marginal Loss|〇|不要|必要| [here](https://arxiv.org/abs/2007.06236) |
+|[5] QI|Marginal Loss|〇|不要|必要| [here](https://arxiv.org/abs/2007.06236) | [here](./src/qualityinference) |
 |[6] F-RICE|Marginal Loss|〇|不要|必要| [here](https://arxiv.org/abs/2102.13314)|
 |[7] Simple Influence|Marginal Loss|〇|不要|必要|[here](https://ieeexplore.ieee.org/document/9006179)|
 |[8] FAIR|Test /Self-Reported|〇|不要|必要| [here](https://ieeexplore.ieee.org/document/9488743)|
