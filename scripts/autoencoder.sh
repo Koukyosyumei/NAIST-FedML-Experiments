@@ -27,6 +27,30 @@ round() {
   printf "%.${2}f" "${1}"
 }
 
+# 0. prepare data
+
+cd ../data-generation
+
+TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
+mkdir $TEMP_FOLDER_NAME_1/train
+mkdir $TEMP_FOLDER_NAME_1/test
+
+TEMP_FOLDER_NAME_2=`mktemp -d --tmpdir=../data`
+mkdir $TEMP_FOLDER_NAME_2/train
+mkdir $TEMP_FOLDER_NAME_2/test
+
+echo "grouping data"
+python3 ./grouping.py \
+--input_dir /work/hideaki-t/dev/FedML/data/MNIST \
+--output_dir $TEMP_FOLDER_NAME_1 \
+--group_size 20
+
+echo "flip label"
+python3 ./label-flip.py \
+--input_dir $TEMP_FOLDER_NAME_1 \
+--output_dir $TEMP_FOLDER_NAME_2 \
+--flip_ratio 0.3
+
 # 1. MNIST standalone FedAvg
 cd ../src/autoencoder
 
@@ -37,7 +61,7 @@ start_time=`date +%s`
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir ../../data/label_flip \
+--data_dir ../$TEMP_FOLDER_NAME_2 \
 --model lr \
 --partition_method hetero  \
 --client_num_in_total 1000 \
@@ -53,3 +77,6 @@ python3 ./main.py \
 end_time=`date +%s`
 run_time=$((end_time - start_time))
 echo $run_time
+
+rm -rf ../$TEMP_FOLDER_NAME_1
+rm -rf ../$TEMP_FOLDER_NAME_2

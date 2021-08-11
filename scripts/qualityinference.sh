@@ -31,21 +31,24 @@ round() {
 
 cd ../data-generation
 
-if [ -e "/work/hideaki-t/dev/NAIST-Experiments/data/grouped/*/*.json" ]; then
-  rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/train/*.json
-  rm /work/hideaki-t/dev/NAIST-Experiments/data/grouped/test/*.json
-fi
+TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
+mkdir $TEMP_FOLDER_NAME_1/train
+mkdir $TEMP_FOLDER_NAME_1/test
+
+TEMP_FOLDER_NAME_2=`mktemp -d --tmpdir=../data`
+mkdir $TEMP_FOLDER_NAME_2/train
+mkdir $TEMP_FOLDER_NAME_2/test
 
 echo "grouping data"
 python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
---output_dir /work/hideaki-t/dev/NAIST-Experiments/data/grouped \
+--output_dir $TEMP_FOLDER_NAME_1 \
 --group_size 20
 
 echo "flip label"
 python3 ./label-flip.py \
---input_dir /work/hideaki-t/dev/NAIST-Experiments/data/grouped \
---output_dir /work/hideaki-t/dev/NAIST-Experiments/data/label_flip \
+--input_dir $TEMP_FOLDER_NAME_1 \
+--output_dir $TEMP_FOLDER_NAME_2 \
 --flip_ratio 0.3
 
 # 1. MNIST standalone FedAvg
@@ -71,3 +74,6 @@ python3 ./main.py \
 end_time=`date +%s`
 run_time=$((end_time - start_time))
 echo $run_time
+
+rm -rf ../$TEMP_FOLDER_NAME_1
+rm -rf ../$TEMP_FOLDER_NAME_2
