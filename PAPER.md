@@ -6,7 +6,7 @@
 
 ### A: Test /Self-Reported Based Contribution Evaluation
 
-各クライアントにデータ数やローカルでの性能を報告させたり、クライアントが送ってきたモデルをサーバー側の検証データで検証する。
+各クライアントにデータ数やローカルでの性能を報告させる
 
 ### B: Marginal Loss Based Contribution Evaluation
 

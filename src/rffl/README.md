@@ -9,7 +9,7 @@
     1. MNIST
     2. CIFAR-10
 
-### Data splits. 
+### Data splits
 
     1. standard I.I.D data sampling
     2. POW (powerlaw split ... 指数的にデータを配分)
