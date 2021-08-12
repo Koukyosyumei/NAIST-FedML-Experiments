@@ -81,11 +81,11 @@ if __name__ == "__main__":
     model_trainer = custom_model_trainer(args, model)
     logging.info(model)
 
-    with open(f"{args.data_dir}/credibility_train_label_fliped.pickle", "rb") as f:
-        true_credibility = pickle.load(f)
-    true_credibility = true_credibility[: args.client_num_in_total]
+    # with open(f"{args.data_dir}/credibility_train_label_fliped.pickle", "rb") as f:
+    #     true_credibility = pickle.load(f)
+    # true_credibility = true_credibility[: args.client_num_in_total]
 
     autoencoderAPI = AutoEncoder_API(
-        dataset, device, args, model_trainer, true_credibility
+        dataset, device, args, model_trainer, true_credibility=None
     )
     autoencoderAPI.train()

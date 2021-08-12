@@ -20,7 +20,7 @@ from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 from freerider.freerider_client import FreeRider_Client
 
-from model import STD_DAGMM
+from detector import STD_DAGMM
 
 
 class AutoEncoder_API(FedAvgAPI):
@@ -30,7 +30,7 @@ class AutoEncoder_API(FedAvgAPI):
         device,
         args,
         model_trainer,
-        true_credibility,
+        true_credibility=None,
     ):
         super().__init__(dataset, device, args, model_trainer)
         self.true_credibility = true_credibility
@@ -140,8 +140,13 @@ class AutoEncoder_API(FedAvgAPI):
             cred = self.autoencoder.predict(flattend_w_locals)
             self.pred_credibility[client_indexes] = cred.to("cpu").detach().numpy()
 
-            sim_credibility = spearmanr(self.pred_credibility, self.true_credibility)[0]
-            wandb.log({"Credibility/Spearmanr": sim_credibility, "round": round_idx})
+            if self.true_credibility is not None:
+                sim_credibility = spearmanr(
+                    self.pred_credibility, self.true_credibility
+                )[0]
+                wandb.log(
+                    {"Credibility/Spearmanr": sim_credibility, "round": round_idx}
+                )
 
             auc_crediblity = roc_auc_score(self.y_freerider, self.pred_credibility)
             wandb.log({"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx})

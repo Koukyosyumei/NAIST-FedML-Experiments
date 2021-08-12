@@ -45,11 +45,11 @@ python3 ./grouping.py \
 --output_dir $TEMP_FOLDER_NAME_1 \
 --group_size 20
 
-echo "flip label"
-python3 ./label-flip.py \
---input_dir $TEMP_FOLDER_NAME_1 \
---output_dir $TEMP_FOLDER_NAME_2 \
---flip_ratio 0.3
+# echo "flip label"
+# python3 ./label-flip.py \
+# --input_dir $TEMP_FOLDER_NAME_1 \
+# --output_dir $TEMP_FOLDER_NAME_2 \
+# --flip_ratio 0.3
 
 # 1. MNIST standalone FedAvg
 cd ../src/autoencoder
@@ -61,17 +61,17 @@ start_time=`date +%s`
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir ../$TEMP_FOLDER_NAME_2 \
+--data_dir ../$TEMP_FOLDER_NAME_1 \
 --model lr \
 --partition_method hetero  \
---client_num_in_total 1000 \
+--client_num_in_total 50 \
 --client_num_per_round 10 \
 --comm_round 200 \
---epochs 1 \
+--epochs 2 \
 --batch_size 10 \
 --client_optimizer sgd \
---free_rider_num 30 \
---lr 0.03 \
+--free_rider_num 15 \
+--lr 0.003 \
 --ci 0
 
 end_time=`date +%s`
