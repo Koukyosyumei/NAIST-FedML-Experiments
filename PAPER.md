@@ -49,7 +49,7 @@
 
 - [1] A Reputation Mechanism Is All You Need: Collaborative Fairness and Adversarial Robustness in Federated Learning, ICML 2021
 
-個々のクライアントが送ってきたgradientと、集計したgradientのコサイン類似度を、クライアントの信頼度とす　　
+個々のクライアントが送ってきたgradientと、集計したgradientのコサイン類似度を、クライアントの信頼度とする　
 <br/>
 
 - [2] Chen Y., Yang X., Qin X., Yu H., Chan P., Shen Z. (2020) Dealing with Label Quality Disparity in Federated Learning. In: Yang Q., Fan L., Yu H. (eds) Federated Learning. Lecture Notes in Computer Science, vol 12500. Springer, Cham. https://doi.org/10.1007/978-3-030-63076-8_8
@@ -62,7 +62,8 @@
 サーバー側も検証データを持っており、検証データとクライアントが持っているデータに対する、モデルの中間層の出力　の分布の違いを計算する。
 <br/>
 
-- [5] J. Kang, Z. Xiong, D. Niyato, H. Yu, Y. -C. Liang and D. I. Kim, "Incentive Design for Efficient Federated Learning in Mobile Networks: A Contract Theory Approach," 2019 IEEE VTS Asia Pacific Wireless Communications Symposium (APWCS), 2019, pp. 1-5, doi: 10.1109/VTS-APWCS.2019.8851649.
+- [5] ] B. Pejo and G. Bicz ´ ok, “Quality inference in federated learning with secure aggregation,” ´ arXiv preprint arXiv:2007.06236,
+2020
 
 現在のラウンドのスコアの上昇幅が前回よりも良かった場合、今回サンプリングしたクライアントの信頼度を+1、前回サ　ンプリングしたクライアントの信頼度を-1する
 <br/>
