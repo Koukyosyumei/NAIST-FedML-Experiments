@@ -4,7 +4,7 @@
 
 ## 手法の種類
 
-### A: Test /Self-Reported Based Contribution Evaluation
+### A: Test / Self-Reported Based Contribution Evaluation
 
 各クライアントにデータ数やローカルでの性能を報告させる
 
@@ -41,8 +41,8 @@
 |[5] QI|Marginal Loss|〇|不要|必要| 〇 | [here](https://arxiv.org/abs/2007.06236) | [here](./src/qualityinference) |
 |[6] F-RICE|Marginal Loss|〇|不要|必要| × | [here](https://arxiv.org/abs/2102.13314)|
 |[7] Simple Influence|Marginal Loss|〇|不要|必要| × |[here](https://ieeexplore.ieee.org/document/9006179)|
-|[8] FAIR|Test /Self-Reported|〇|不要|必要| × | [here](https://ieeexplore.ieee.org/document/9488743)|
-|[9] FairFed|Test /Self-Reported|〇|不要|不要| × | [here](https://ieeexplore.ieee.org/document/9425266) |
+|[8] FAIR|Test / Self-Reported|〇|不要|必要| × | [here](https://ieeexplore.ieee.org/document/9488743)|
+|[9] FairFed|Test / Self-Reported|〇|不要|不要| × | [here](https://ieeexplore.ieee.org/document/9425266) |
 |[10] STD_DAGMM| ML |〇|不要|必要| 〇 | [here](https://arxiv.org/abs/1911.12560) | [here](./src/autoencoder) |
 |[11] Spectral Anomaly Detection| ML |〇|不要|必要| × | [here](https://arxiv.org/abs/2002.00211) |
 |[12] Blockchained On-Device Federated Learning| Blockchain |〇|不要|必要| 〇 | [here](https://ieeexplore.ieee.org/document/8733825) |
