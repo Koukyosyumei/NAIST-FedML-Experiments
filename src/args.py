@@ -137,6 +137,12 @@ def add_args(parser):
         help="gamma",
     )
 
+    parser.add_argument("--method", type=str, default="QI", help="federated method")
+
+    parser.add_argument("--freerider", action="store_true")
+
+    parser.add_argument("--remove", action="store_true")
+
     parser.add_argument("--use_sparsify", action="store_true")
     parser.add_argument("--use_reputation", action="store_true")
 
