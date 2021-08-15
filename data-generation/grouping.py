@@ -14,13 +14,13 @@ def agg(input_path, output_path, group_size):
     users = cdata["users"]
 
     users_chunks = {
-        f"fagg_{i}": users[s - group_size : s]
+        f"fagg_{i}": users[s - group_size : min(s, len(users))]
         for i, s in enumerate(
             list(range(group_size, len(users) + group_size, group_size))
         )
     }
     num_samples_chunks = [
-        sum(cdata["num_samples"][s - group_size : s])
+        sum(cdata["num_samples"][s - group_size : min(s, len(users))])
         for s in list(range(group_size, len(users) + group_size, group_size))
     ]
     user_data_chunks = {}
