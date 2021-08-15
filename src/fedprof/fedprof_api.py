@@ -14,7 +14,10 @@ from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from torch import nn
 
 import wandb
-from footprinter import FootPrinter
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
+from fedprof.footprinter import FootPrinter
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 

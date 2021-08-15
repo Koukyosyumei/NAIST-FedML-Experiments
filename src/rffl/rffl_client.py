@@ -1,8 +1,5 @@
-import copy
 import os
 import sys
-
-import torch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.standalone.fedavg.client import Client

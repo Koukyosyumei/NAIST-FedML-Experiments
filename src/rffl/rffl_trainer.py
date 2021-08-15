@@ -5,9 +5,10 @@ import sys
 
 import torch
 from torch import nn
-from torch.linalg import norm
 
-from utils import compute_grad_update, flatten, unflatten
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
+from rffl.utils import compute_grad_update
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 

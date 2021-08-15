@@ -6,15 +6,22 @@ import sys
 import torch
 import torch.nn.functional as F
 from scipy.stats import spearmanr
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 import wandb
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
-from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
+import random
 
-from rffl_client import RFFL_Client
-from utils import flatten, mask_grad_update_by_order
+import numpy as np
+from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
+from freerider.freerider_client import FreeRider_Client
+
+from rffl.rffl_client import RFFL_Client
+from rffl.utils import flatten, mask_grad_update_by_order
 
 
 class RFFLAPI(FedAvgAPI):
@@ -40,7 +47,7 @@ class RFFLAPI(FedAvgAPI):
 
         self.use_sparsify = args.use_sparsify
         self.use_reputation = args.use_reputation
-        self.threshold = 1 / (3 * args.client_num_in_total)
+        self.threshold = 1 / (10 * args.client_num_in_total)
         self.warm_up = 10
         self.alpha = 0.95
 
@@ -52,6 +59,25 @@ class RFFLAPI(FedAvgAPI):
         model_trainer,
     ):
         logging.info("############setup_clients (START)#############")
+
+        if self.args.freerider:
+            self.freeriders_idx = random.sample(
+                list(range(self.args.client_num_in_total)), self.args.free_rider_num
+            )
+            self.y_freerider = np.array([0.0] * self.args.client_num_in_total)
+            self.y_freerider[self.freeriders_idx] = 1
+
+            self.freerider = FreeRider_Client(
+                0,
+                train_data_local_dict[0],
+                test_data_local_dict[0],
+                train_data_local_num_dict[0],
+                self.args,
+                self.device,
+                model_trainer,
+                use_gradient=True,
+            )
+
         self.client_idx_to_statedict = {}
         for client_idx in range(self.args.client_num_per_round):
             c = RFFL_Client(
@@ -85,26 +111,44 @@ class RFFLAPI(FedAvgAPI):
             logging.info("client_indexes = " + str(self.R_set))
 
             for client_idx in self.R_set:
-                client = self.client_list[client_idx]
-                client.update_local_dataset(
-                    client_idx,
-                    self.train_data_local_dict[client_idx],
-                    self.test_data_local_dict[client_idx],
-                    self.train_data_local_num_dict[client_idx],
-                )
-                # そのクライアントのパラメータをセット
-                client.model_trainer.set_model_params(
-                    self.client_idx_to_statedict[client_idx]
-                )
-                # 前回のラウンドで計算したgradientで、パラメータを更新
-                if round_idx > 0:
-                    client.download(client_idx_to_reward_gradients[client_idx])
-                # 学習
-                grad = client.train()
-                # 更新したパラメータを保存
-                self.client_idx_to_statedict[
-                    client_idx
-                ] = client.model_trainer.get_model_params()
+                if self.args.freerider and client_idx in self.freeriders_idx:
+                    self.freerider.update_local_dataset(
+                        client_idx,
+                        self.train_data_local_dict[client_idx],
+                        self.test_data_local_dict[client_idx],
+                        self.train_data_local_num_dict[client_idx],
+                    )
+
+                    if round_idx > 0:
+                        # train on new dataset
+                        grad = self.freerider.train(
+                            client_idx_to_reward_gradients[client_idx]
+                        )
+                    else:
+                        grad = self.freerider.train(None)
+
+                else:
+                    client = self.client_list[client_idx]
+                    client.update_local_dataset(
+                        client_idx,
+                        self.train_data_local_dict[client_idx],
+                        self.test_data_local_dict[client_idx],
+                        self.train_data_local_num_dict[client_idx],
+                    )
+                    # そのクライアントのパラメータをセット
+                    client.model_trainer.set_model_params(
+                        self.client_idx_to_statedict[client_idx]
+                    )
+                    # 前回のラウンドで計算したgradientで、パラメータを更新
+                    if round_idx > 0:
+                        client.download(client_idx_to_reward_gradients[client_idx])
+                    # 学習
+                    grad = client.train()
+                    # 更新したパラメータを保存
+                    self.client_idx_to_statedict[
+                        client_idx
+                    ] = client.model_trainer.get_model_params()
+
                 # upload
                 gradient_locals[client_idx] = grad
 
@@ -122,10 +166,29 @@ class RFFLAPI(FedAvgAPI):
                 else:
                     self._local_test_on_all_clients(round_idx)
 
-            sim_credibility = spearmanr(
-                self.rs.to("cpu").detach().numpy(), self.true_credibility
-            )[0]
-            wandb.log({"Credibility/Spearmanr": sim_credibility, "round": round_idx})
+            if self.args.freerider:
+                auc_crediblity = roc_auc_score(
+                    self.y_freerider, -1 * self.rs.to("cpu").detach().numpy()
+                )
+                wandb.log(
+                    {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
+                )
+                wandb.log(
+                    {
+                        "Clients/Surviving FreeRider": len(
+                            list(set(self.R_set).intersection(self.freeriders_idx))
+                        ),
+                        "round": round_idx,
+                    }
+                )
+            else:
+                sim_credibility = spearmanr(
+                    self.rs.to("cpu").detach().numpy(), self.true_credibility
+                )[0]
+                wandb.log(
+                    {"Credibility/Spearmanr": sim_credibility, "round": round_idx}
+                )
+
             wandb.log({"Clients/R_set": len(self.R_set), "round": round_idx})
 
     def _aggregate(self, grad_locals, round_idx):
@@ -156,7 +219,8 @@ class RFFLAPI(FedAvgAPI):
             for client_idx, (local_sample_number, gradient) in grad_locals.items():
                 for grad_idx in range(len(aggregated_gradient)):
                     aggregated_gradient[grad_idx].data += (
-                        gradient[grad_idx].data * relative_sizes[client_idx]
+                        gradient[grad_idx].data.to(self.device)
+                        * relative_sizes[client_idx]
                     )
             logging.info("aggregated_gradient")
             logging.info(aggregated_gradient)
@@ -167,11 +231,13 @@ class RFFLAPI(FedAvgAPI):
                 for grad_idx in range(len(aggregated_gradient)):
                     if round_idx == 0:
                         aggregated_gradient[grad_idx].data += (
-                            gradient[grad_idx].data * relative_sizes[client_idx]
+                            gradient[grad_idx].data.to(self.device)
+                            * relative_sizes[client_idx]
                         )
                     else:
                         aggregated_gradient[grad_idx].data += (
-                            gradient[grad_idx].data * self.rs[client_idx]
+                            gradient[grad_idx].data.to(self.device)
+                            * self.rs[client_idx]
                         )
             flat_aggre_grad = flatten(aggregated_gradient)
             logging.info("flat_agg_grad")
@@ -186,7 +252,7 @@ class RFFLAPI(FedAvgAPI):
             ):
                 assert client_idx == c_idx
                 phis[client_idx] = F.cosine_similarity(
-                    flatten(gradient), flat_aggre_grad, 0, 1e-10
+                    flatten(gradient).to(self.device), flat_aggre_grad, 0, 1e-10
                 )
                 self.rs[client_idx] = (
                     self.alpha * self.rs[client_idx]
@@ -196,13 +262,13 @@ class RFFLAPI(FedAvgAPI):
             self.rs = torch.div(self.rs, self.rs.sum())
 
             # remove the unuseful cilents
-
-            if round_idx > self.warm_up:
-                for client_idx in self.R_set:
-                    if self.rs[client_idx] < curr_threshold:
-                        self.rs[client_idx] = 0
-                        self.R_set.remove(client_idx)
-            self.rs = torch.div(self.rs, self.rs.sum())
+            if self.args.remove:
+                if round_idx > self.warm_up:
+                    for client_idx in self.R_set:
+                        if self.rs[client_idx] < curr_threshold:
+                            self.rs[client_idx] = 0
+                            self.R_set.remove(client_idx)
+                self.rs = torch.div(self.rs, self.rs.sum())
 
             self.r_threshold.append(self.threshold * (1.0 / len(self.R_set)))
             q_ratios = torch.div(self.rs, torch.max(self.rs))
@@ -231,12 +297,13 @@ class RFFLAPI(FedAvgAPI):
             for grad_idx in range(len(reward_gradients[client_idx])):
                 if round_idx == 0 or not self.use_reputation:
                     reward_gradients[client_idx][grad_idx].data -= (
-                        grad_locals[client_idx][1][grad_idx].data
+                        grad_locals[client_idx][1][grad_idx].data.to(self.device)
                         * relative_sizes[client_idx]
                     )
                 else:
                     reward_gradients[client_idx][grad_idx].data -= (
-                        grad_locals[client_idx][1][grad_idx].data * self.rs[client_idx]
+                        grad_locals[client_idx][1][grad_idx].data.to(self.device)
+                        * self.rs[client_idx]
                     )
 
         logging.info("rs")
@@ -292,7 +359,7 @@ class RFFLAPI(FedAvgAPI):
             )
 
             """
-            Note: CI environment is CPU-based computing. 
+            Note: CI environment is CPU-based computing.
             The training speed for RNN training is to slow in this setting, so we only test a client to make sure there is no programming error.
             """
             if self.args.ci == 1:

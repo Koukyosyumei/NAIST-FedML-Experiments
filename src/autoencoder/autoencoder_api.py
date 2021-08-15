@@ -13,6 +13,7 @@ from torch import nn
 
 import wandb
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
@@ -20,7 +21,7 @@ from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 from freerider.freerider_client import FreeRider_Client
 
-from detector import STD_DAGMM
+from autoencoder.detector import STD_DAGMM
 
 
 class AutoEncoder_API(FedAvgAPI):
@@ -95,7 +96,7 @@ class AutoEncoder_API(FedAvgAPI):
 
             """
             for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
-            Instead of changing the 'Client' instances, our implementation keeps the 'Client' instances and then updates their local dataset 
+            Instead of changing the 'Client' instances, our implementation keeps the 'Client' instances and then updates their local dataset
             """
             client_indexes = self._client_sampling(
                 round_idx, self.args.client_num_in_total, self.args.client_num_per_round
