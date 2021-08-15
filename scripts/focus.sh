@@ -51,17 +51,16 @@ python3 ./label-flip.py \
 --output_dir $TEMP_FOLDER_NAME_2 \
 --flip_ratio 0.3
 
-
 # 1. MNIST standalone FedAvg
-cd ../src/focus
+cd ../src
 
-echo "start FOCUS"
+echo "start FedProf"
 start_time=`date +%s`
 
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir ../$TEMP_FOLDER_NAME_2 \
+--data_dir $TEMP_FOLDER_NAME_2 \
 --model nn \
 --partition_method hetero  \
 --client_num_in_total 49 \
@@ -70,6 +69,7 @@ python3 ./main.py \
 --epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
+--method FOCUS
 --lr 0.03 \
 --alpha 10 \
 --ci 0
@@ -78,5 +78,5 @@ end_time=`date +%s`
 run_time=$((end_time - start_time))
 echo $run_time
 
-rm -rf ../$TEMP_FOLDER_NAME_1
-rm -rf ../$TEMP_FOLDER_NAME_2
+rm -rf $TEMP_FOLDER_NAME_1
+rm -rf $TEMP_FOLDER_NAME_2
