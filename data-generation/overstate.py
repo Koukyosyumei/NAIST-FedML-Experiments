@@ -46,7 +46,7 @@ def add_args(parser):
     parser.add_argument(
         "--rate_bound",
         type=float,
-        default=2.0,
+        default=5.0,
         metavar="RB",
         help="bounr rate",
     )
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         if idx in inflated_idx:
             data_size = len(cdata["user_data"][idx]["y"])
             cut_size = int(
-                random.uniform(args.rate_bound, 1 / args.inflated_rate) * data_size
+                random.uniform(1 / args.rate_bound, 1 / args.inflated_rate) * data_size
             )
             cdata["user_data"][idx]["y"] = cdata["user_data"][idx]["y"][:cut_size]
             cdata["user_data"][idx]["x"] = cdata["user_data"][idx]["x"][:cut_size]
