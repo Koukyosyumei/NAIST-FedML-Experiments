@@ -178,7 +178,7 @@ class STD_DAGMM(nn.Module):
             E = torch.cat((E, e))
         return E
 
-    def fit(self, x, epochs=3):
+    def fit(self, x, epochs=1):
         optimizer = optim.Adam(self.parameters(), weight_decay=0.0001)
         for i in range(epochs):
             self.train()

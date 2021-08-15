@@ -163,7 +163,7 @@ class QualityInferenceAPI(FedAvgAPI):
             logging.info(self.pred_credibility)
 
             if self.args.freerider:
-                auc_crediblity = roc_auc_score(self.y_freerider, self.pred_credibility)
+                auc_crediblity = roc_auc_score(self.y_freerider, -self.pred_credibility)
                 wandb.log(
                     {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
                 )
