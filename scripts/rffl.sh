@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -S /bin/bash
-# #$ -q pascal_short.q
+#$ -q pascal_short.q
 
 set -ex
 
@@ -39,7 +39,7 @@ echo "grouping data"
 python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
---group_size 50
+--group_size 49
 
 # 1. MNIST standalone FedAvg
 cd ../src
@@ -52,8 +52,8 @@ python3 ./main.py \
 --data_dir $TEMP_FOLDER_NAME_1 \
 --model nn \
 --partition_method hetero  \
---client_num_in_total 19 \
---client_num_per_round 19 \
+--client_num_in_total 20 \
+--client_num_per_round 20 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
@@ -68,8 +68,6 @@ python3 ./main.py \
 --use_reputation \
 --use_sparsify \
 --remove
-
-
 
 end_time=`date +%s`
 run_time=$((end_time - start_time))

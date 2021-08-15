@@ -39,7 +39,7 @@ echo "grouping data"
 python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
---group_size 20
+--group_size 49
 
 # 1. MNIST standalone FedAvg
 cd ../src
@@ -50,18 +50,18 @@ python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
 --data_dir $TEMP_FOLDER_NAME_1 \
---model lr \
+--model nn \
 --partition_method hetero  \
---client_num_in_total 50 \
---client_num_per_round 10 \
+--client_num_in_total 20 \
+--client_num_per_round 20 \
 --comm_round 200 \
---epochs 2 \
+--epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
 --method AE \
 --freerider \
---free_rider_num 15 \
---lr 0.03 \
+--free_rider_num 4 \
+--lr 0.05 \
 --ci 0
 
 end_time=`date +%s`

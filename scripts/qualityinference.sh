@@ -43,7 +43,7 @@ echo "grouping data"
 python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
---group_size 20
+--group_size 49
 
 echo "flip label"
 python3 ./label-flip.py \
@@ -63,7 +63,7 @@ python3 ./main.py \
 --data_dir $TEMP_FOLDER_NAME_2 \
 --model nn \
 --partition_method hetero  \
---client_num_in_total 49 \
+--client_num_in_total 20 \
 --client_num_per_round 5 \
 --comm_round 200 \
 --epochs 1 \
@@ -71,8 +71,8 @@ python3 ./main.py \
 --client_optimizer sgd \
 --method QI \
 --freerider \
---free_rider_num 10 \
---lr 0.01 \
+--free_rider_num 4 \
+--lr 0.03 \
 --alpha 10 \
 --ci 0
 
