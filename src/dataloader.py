@@ -7,30 +7,36 @@ import torch
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../FedML/")))
 
-from fedml_api.data_preprocessing.cifar10.data_loader import \
-    load_partition_data_cifar10
-from fedml_api.data_preprocessing.cifar100.data_loader import \
-    load_partition_data_cifar100
-from fedml_api.data_preprocessing.cinic10.data_loader import \
-    load_partition_data_cinic10
-from fedml_api.data_preprocessing.fed_cifar100.data_loader import \
-    load_partition_data_federated_cifar100
-from fedml_api.data_preprocessing.fed_shakespeare.data_loader import \
-    load_partition_data_federated_shakespeare
-from fedml_api.data_preprocessing.FederatedEMNIST.data_loader import \
-    load_partition_data_federated_emnist
-from fedml_api.data_preprocessing.ImageNet.data_loader import \
-    load_partition_data_ImageNet
-from fedml_api.data_preprocessing.Landmarks.data_loader import \
-    load_partition_data_landmarks
-from fedml_api.data_preprocessing.MNIST.data_loader import \
-    load_partition_data_mnist
-from fedml_api.data_preprocessing.shakespeare.data_loader import \
-    load_partition_data_shakespeare
-from fedml_api.data_preprocessing.stackoverflow_lr.data_loader import \
-    load_partition_data_federated_stackoverflow_lr
-from fedml_api.data_preprocessing.stackoverflow_nwp.data_loader import \
-    load_partition_data_federated_stackoverflow_nwp
+from fedml_api.data_preprocessing.cifar10.data_loader import load_partition_data_cifar10
+from fedml_api.data_preprocessing.cifar100.data_loader import (
+    load_partition_data_cifar100,
+)
+from fedml_api.data_preprocessing.cinic10.data_loader import load_partition_data_cinic10
+from fedml_api.data_preprocessing.fed_cifar100.data_loader import (
+    load_partition_data_federated_cifar100,
+)
+from fedml_api.data_preprocessing.fed_shakespeare.data_loader import (
+    load_partition_data_federated_shakespeare,
+)
+from fedml_api.data_preprocessing.FederatedEMNIST.data_loader import (
+    load_partition_data_federated_emnist,
+)
+from fedml_api.data_preprocessing.ImageNet.data_loader import (
+    load_partition_data_ImageNet,
+)
+from fedml_api.data_preprocessing.Landmarks.data_loader import (
+    load_partition_data_landmarks,
+)
+from fedml_api.data_preprocessing.MNIST.data_loader import load_partition_data_mnist
+from fedml_api.data_preprocessing.shakespeare.data_loader import (
+    load_partition_data_shakespeare,
+)
+from fedml_api.data_preprocessing.stackoverflow_lr.data_loader import (
+    load_partition_data_federated_stackoverflow_lr,
+)
+from fedml_api.data_preprocessing.stackoverflow_nwp.data_loader import (
+    load_partition_data_federated_stackoverflow_nwp,
+)
 
 
 def load_data(args, dataset_name):
@@ -66,8 +72,8 @@ def load_data(args, dataset_name):
         For shallow NN or linear models,
         we uniformly sample a fraction of clients each round (as the original FedAvg paper)
         """
-        args.client_num_in_total = client_num
-        args.client_num_per_round = client_num
+        # args.client_num_in_total = client_num
+        # args.client_num_per_round = client_num
 
     elif dataset_name == "femnist":
         logging.info("load_data. dataset_name = %s" % dataset_name)
