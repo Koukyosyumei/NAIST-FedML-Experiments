@@ -50,6 +50,11 @@ class AutoEncoder_API(FedAvgAPI):
         ).shape[-1]
         self.autoencoder = STD_DAGMM(self.num_parameters, device)
 
+        if self.args.overstate:
+            self.y_adversary = np.array(true_credibility)
+            self.y_adversary = np.where(self.y_adversary < 1, 0, 1)
+            self.adversary_idx = np.where(np.array(true_credibility) < 1)[0]
+
     def _setup_clients(
         self,
         train_data_local_num_dict,
@@ -58,21 +63,25 @@ class AutoEncoder_API(FedAvgAPI):
         model_trainer,
     ):
         logging.info("############setup_clients (START)#############")
-        self.freeriders_idx = random.sample(
-            list(range(self.args.client_num_in_total)), self.args.free_rider_num
-        )
-        self.y_freerider = np.array([0.0] * self.args.client_num_in_total)
-        self.y_freerider[self.freeriders_idx] = 1
 
-        self.freerider = FreeRider_Client(
-            0,
-            train_data_local_dict[0],
-            test_data_local_dict[0],
-            train_data_local_num_dict[0],
-            self.args,
-            self.device,
-            model_trainer,
-        )
+        if self.args.freerider:
+            self.adversary_idx = random.sample(
+                list(range(self.args.client_num_in_total)), self.args.free_rider_num
+            )
+            self.y_adversary = np.array([0.0] * self.args.client_num_in_total)
+            self.y_adversary[self.adversary_idx] = 1
+
+            self.freerider = FreeRider_Client(
+                0,
+                train_data_local_dict[0],
+                test_data_local_dict[0],
+                train_data_local_num_dict[0],
+                self.args,
+                self.device,
+                model_trainer,
+                use_gradient=False,
+            )
+
         for client_idx in range(self.args.client_num_per_round):
             c = Client(
                 client_idx,
@@ -107,7 +116,18 @@ class AutoEncoder_API(FedAvgAPI):
                 # update dataset
                 client_idx = client_indexes[idx]
 
-                if client_idx not in self.freeriders_idx:
+                if self.args.freerider and client_idx in self.adversary_idx:
+                    self.freerider.update_local_dataset(
+                        client_idx,
+                        self.train_data_local_dict[client_idx],
+                        self.test_data_local_dict[client_idx],
+                        self.train_data_local_num_dict[client_idx],
+                    )
+
+                    # train on new dataset
+                    w = self.freerider.train(copy.deepcopy(w_global))
+
+                else:
                     # normal client
                     client.update_local_dataset(
                         client_idx,
@@ -119,16 +139,6 @@ class AutoEncoder_API(FedAvgAPI):
                     # train on new dataset
                     w = client.train(copy.deepcopy(w_global))
                     # self.logger.info("local weights = " + str(w))
-                else:
-                    self.freerider.update_local_dataset(
-                        client_idx,
-                        self.train_data_local_dict[client_idx],
-                        self.test_data_local_dict[client_idx],
-                        self.train_data_local_num_dict[client_idx],
-                    )
-
-                    # train on new dataset
-                    w = self.freerider.train(copy.deepcopy(w_global))
 
                 w_locals.append((client.get_sample_number(), copy.deepcopy(w)))
 
@@ -141,16 +151,7 @@ class AutoEncoder_API(FedAvgAPI):
             cred = self.autoencoder.predict(flattend_w_locals)
             self.pred_credibility[client_indexes] = cred.to("cpu").detach().numpy()
 
-            if self.true_credibility is not None:
-                sim_credibility = spearmanr(
-                    self.pred_credibility, self.true_credibility
-                )[0]
-                wandb.log(
-                    {"Credibility/Spearmanr": sim_credibility, "round": round_idx}
-                )
-
-            auc_crediblity = roc_auc_score(self.y_freerider, self.pred_credibility)
-            wandb.log({"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx})
+            logging.info(self.pred_credibility)
 
             # update global weights
             w_global = self._aggregate(w_locals)
@@ -166,3 +167,18 @@ class AutoEncoder_API(FedAvgAPI):
                     self._local_test_on_validation_set(round_idx)
                 else:
                     self._local_test_on_all_clients(round_idx)
+
+            # test result
+            if self.args.overstate or self.args.freerider:
+                auc_crediblity = roc_auc_score(self.y_adversary, self.pred_credibility)
+                wandb.log(
+                    {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
+                )
+
+            if self.true_credibility is not None:
+                sim_credibility = spearmanr(
+                    self.pred_credibility, self.true_credibility
+                )[0]
+                wandb.log(
+                    {"Credibility/Spearmanr": sim_credibility, "round": round_idx}
+                )

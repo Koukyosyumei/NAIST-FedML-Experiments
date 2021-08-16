@@ -36,6 +36,10 @@ class RFFLAPI(FedAvgAPI):
         assert args.client_num_in_total == args.client_num_per_round
 
         self.true_credibility = true_credibility
+        if self.args.overstate:
+            self.y_adversary = np.array(true_credibility)
+            self.y_adversary = np.where(self.y_adversary < 1, 0, 1)
+            self.adversary_idx = np.where(np.array(true_credibility) < 1)[0]
 
         self.rs = torch.zeros(args.client_num_in_total, device=device)
         self.past_phis = []
@@ -61,11 +65,11 @@ class RFFLAPI(FedAvgAPI):
         logging.info("############setup_clients (START)#############")
 
         if self.args.freerider:
-            self.freeriders_idx = random.sample(
+            self.adversary_idx = random.sample(
                 list(range(self.args.client_num_in_total)), self.args.free_rider_num
             )
-            self.y_freerider = np.array([0.0] * self.args.client_num_in_total)
-            self.y_freerider[self.freeriders_idx] = 1
+            self.y_adversary = np.array([0.0] * self.args.client_num_in_total)
+            self.y_adversary[self.adversary_idx] = 1
 
             self.freerider = FreeRider_Client(
                 0,
@@ -111,7 +115,7 @@ class RFFLAPI(FedAvgAPI):
             logging.info("client_indexes = " + str(self.R_set))
 
             for client_idx in self.R_set:
-                if self.args.freerider and client_idx in self.freeriders_idx:
+                if self.args.freerider and client_idx in self.adversary_idx:
                     self.freerider.update_local_dataset(
                         client_idx,
                         self.train_data_local_dict[client_idx],
@@ -166,9 +170,10 @@ class RFFLAPI(FedAvgAPI):
                 else:
                     self._local_test_on_all_clients(round_idx)
 
-            if self.args.freerider:
+            # test result
+            if self.args.overstate or self.args.freerider:
                 auc_crediblity = roc_auc_score(
-                    self.y_freerider, -1 * self.rs.to("cpu").detach().numpy()
+                    self.y_adversary, -1 * self.rs.to("cpu").detach().numpy()
                 )
                 wandb.log(
                     {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
@@ -176,12 +181,13 @@ class RFFLAPI(FedAvgAPI):
                 wandb.log(
                     {
                         "Clients/Surviving FreeRider": len(
-                            list(set(self.R_set).intersection(self.freeriders_idx))
+                            list(set(self.R_set).intersection(self.adversary_idx))
                         ),
                         "round": round_idx,
                     }
                 )
-            else:
+
+            if self.true_credibility is not None:
                 sim_credibility = spearmanr(
                     self.rs.to("cpu").detach().numpy(), self.true_credibility
                 )[0]
