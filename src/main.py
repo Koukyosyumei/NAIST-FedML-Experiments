@@ -11,12 +11,15 @@ import torch
 import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../FedML/")))
-from fedml_api.standalone.fedavg.my_model_trainer_classification import \
-    MyModelTrainer as MyModelTrainerCLS
-from fedml_api.standalone.fedavg.my_model_trainer_nwp import \
-    MyModelTrainer as MyModelTrainerNWP
-from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import \
-    MyModelTrainer as MyModelTrainerTAG
+from fedml_api.standalone.fedavg.my_model_trainer_classification import (
+    MyModelTrainer as MyModelTrainerCLS,
+)
+from fedml_api.standalone.fedavg.my_model_trainer_nwp import (
+    MyModelTrainer as MyModelTrainerNWP,
+)
+from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
+    MyModelTrainer as MyModelTrainerTAG,
+)
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./*/")))
 from args import add_args
@@ -109,7 +112,7 @@ if __name__ == "__main__":
 
     elif args.method == "AE":
         autoencoderAPI = AutoEncoder_API(
-            dataset, device, args, model_trainer, true_credibility=None
+            dataset, device, args, model_trainer, true_credibility=true_credibility
         )
         autoencoderAPI.train()
 
