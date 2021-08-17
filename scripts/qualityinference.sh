@@ -64,7 +64,7 @@ python3 ./main.py \
 --model nn \
 --partition_method hetero  \
 --client_num_in_total 20 \
---client_num_per_round 5 \
+--client_num_per_round 1 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
@@ -72,7 +72,7 @@ python3 ./main.py \
 --method QI \
 --freerider \
 --free_rider_num 4 \
---lr 0.03 \
+--lr 0.05 \
 --alpha 10 \
 --ci 0
 

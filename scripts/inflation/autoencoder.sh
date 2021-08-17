@@ -27,6 +27,8 @@ round() {
   printf "%.${2}f" "${1}"
 }
 
+client_num=20
+
 # 0. prepare data
 
 cd ../../data-generation
@@ -43,15 +45,16 @@ echo "grouping data"
 python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
---group_size 49
+--client_num $client_num \
+--max_gap 2
 
 echo "inflating data"
 python3 ./overstate.py \
 --input_dir $TEMP_FOLDER_NAME_1 \
 --output_dir $TEMP_FOLDER_NAME_2 \
 --inflated_client_num 4 \
---inflated_rate 30.0 \
---rate_bound 50.0
+--inflated_rate 3.0 \
+--rate_bound 5.0
 
 # 1. MNIST standalone FedAvg
 cd ../src
@@ -64,8 +67,8 @@ python3 ./main.py \
 --data_dir $TEMP_FOLDER_NAME_2 \
 --model nn \
 --partition_method hetero  \
---client_num_in_total 20 \
---client_num_per_round 20 \
+--client_num_in_total $client_num \
+--client_num_per_round $client_num \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \

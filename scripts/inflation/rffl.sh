@@ -27,6 +27,8 @@ round() {
   printf "%.${2}f" "${1}"
 }
 
+client_num=20
+
 # 0. prepare data
 
 cd ../../data-generation
@@ -43,7 +45,8 @@ echo "grouping data"
 python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
---group_size 49
+--client_num $client_num \
+--max_gap 2
 
 echo "inflating data"
 python3 ./overstate.py \
@@ -64,8 +67,8 @@ python3 ./main.py \
 --data_dir $TEMP_FOLDER_NAME_2 \
 --model nn \
 --partition_method hetero  \
---client_num_in_total 20 \
---client_num_per_round 20 \
+--client_num_in_total $client_num \
+--client_num_per_round $client_num \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
