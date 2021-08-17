@@ -3,7 +3,7 @@ import glob
 import json
 
 
-def agg(input_path, output_path, group_size):
+def agg(input_path, output_path, client_num, max_gap, auxiliary_ratio):
 
     with open(
         input_path,
@@ -11,30 +11,37 @@ def agg(input_path, output_path, group_size):
     ) as inf:
         cdata = json.load(inf)
 
-    users = cdata["users"]
+    # データを一つにまとめる
+    all_data = {"x": [], "y": []}
+    for uid in cdata["users"]:
+        all_data["x"] += cdata["user_data"][uid]["x"]
+        all_data["y"] += cdata["user_data"][uid]["y"]
+    all_data_num = len(all_data["y"])
+    auxiliary_size = int(all_data_num * auxiliary_ratio)
+    all_data_num -= auxiliary_size
 
-    users_chunks = {
-        f"fagg_{i}": users[s - group_size : min(s, len(users))]
-        for i, s in enumerate(
-            list(range(group_size, len(users) + group_size, group_size))
-        )
-    }
-    num_samples_chunks = [
-        sum(cdata["num_samples"][s - group_size : min(s, len(users))])
-        for s in list(range(group_size, len(users) + group_size, group_size))
-    ]
-    user_data_chunks = {}
+    # クライアントごとのデータ数の決定
+    g = (max_gap - 1) / (client_num - 1)
+    gaps = [int(1 + g * i) for i in range(client_num)]
+    num_data_list = [int(g * (all_data_num / sum(gaps))) for g in gaps]
+    num_data_list[-1] += all_data_num - sum(num_data_list)
+    num_data_list = [auxiliary_size] + num_data_list
 
-    for agg_id, ori_ids in users_chunks.items():
-        user_data_chunks[agg_id] = {"y": [], "x": []}
-        for ori_id in ori_ids:
-            user_data_chunks[agg_id]["y"] += cdata["user_data"][ori_id]["y"]
-            user_data_chunks[agg_id]["x"] += cdata["user_data"][ori_id]["x"]
+    print("#### Number of data each client has ####")
+    print(num_data_list)
 
+    # データを割り振る
     aggdata = {}
-    aggdata["users"] = list(users_chunks.keys())
-    aggdata["num_samples"] = num_samples_chunks
-    aggdata["user_data"] = user_data_chunks
+    aggdata["users"] = [f"fagg_{i}" for i in range(client_num + 1)]
+    aggdata["num_samples"] = num_data_list
+    aggdata["user_data"] = {uid: {"x": [], "y": []} for uid in aggdata["users"]}
+    for i in range(1, client_num + 2):
+        aggdata["user_data"][f"fagg_{i-1}"]["x"] = all_data["x"][
+            sum(num_data_list[: i - 1]) : sum(num_data_list[:i])
+        ]
+        aggdata["user_data"][f"fagg_{i-1}"]["y"] = all_data["y"][
+            sum(num_data_list[: i - 1]) : sum(num_data_list[:i])
+        ]
 
     with open(output_path, "w") as f:
         json.dump(aggdata, f)
@@ -63,11 +70,27 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--group_size",
+        "--client_num",
         type=int,
         default=50,
-        metavar="S",
-        help="group size",
+        metavar="C",
+        help="the number of clients",
+    )
+
+    parser.add_argument(
+        "--max_gap",
+        type=int,
+        default=20,
+        metavar="M",
+        help="max gap",
+    )
+
+    parser.add_argument(
+        "--auxiliary_ratio",
+        type=float,
+        default=0.01,
+        metavar="AR",
+        help="auxiliary ratio",
     )
 
     return parser
@@ -80,8 +103,20 @@ if __name__ == "__main__":
     input_train_json_path = glob.glob(args.input_dir + "/train/*.json")[0]
     input_test_json_path = glob.glob(args.input_dir + "/test/*.json")[0]
 
-    output_train_json_path = args.output_dir + f"/train/train_{args.group_size}.json"
-    output_test_json_path = args.output_dir + f"/test/test_{args.group_size}.json"
+    output_train_json_path = args.output_dir + f"/train/train_{args.client_num}.json"
+    output_test_json_path = args.output_dir + f"/test/test_{args.client_num}.json"
 
-    agg(input_train_json_path, output_train_json_path, args.group_size)
-    agg(input_test_json_path, output_test_json_path, args.group_size)
+    agg(
+        input_train_json_path,
+        output_train_json_path,
+        args.client_num,
+        args.max_gap,
+        args.auxiliary_ratio,
+    )
+    agg(
+        input_test_json_path,
+        output_test_json_path,
+        args.client_num,
+        args.max_gap,
+        args.auxiliary_ratio,
+    )
