@@ -48,21 +48,30 @@ class QualityInferenceAPI(FedAvgAPI):
         model_trainer,
     ):
         logging.info("############setup_clients (START)#############")
-        self.freeriders_idx = random.sample(
-            list(range(self.args.client_num_in_total)), self.args.free_rider_num
-        )
-        self.y_freerider = np.array([0.0] * self.args.client_num_in_total)
-        self.y_freerider[self.freeriders_idx] = 1
 
-        self.freerider = FreeRider_Client(
-            0,
-            train_data_local_dict[0],
-            test_data_local_dict[0],
-            train_data_local_num_dict[0],
-            self.args,
-            self.device,
-            model_trainer,
-        )
+        if self.args.overstate:
+            self.y_adversary = np.array(self.true_credibility)
+            self.y_adversary = np.where(self.y_adversary < 1, 0, 1)
+            self.adversary_idx = np.where(np.array(self.true_credibility) < 1)[0]
+
+        if self.args.freerider:
+            self.adversary_idx = random.sample(
+                list(range(self.args.client_num_in_total)), self.args.free_rider_num
+            )
+            self.y_adversary = np.array([0.0] * self.args.client_num_in_total)
+            self.y_adversary[self.adversary_idx] = 1
+
+            self.freerider = FreeRider_Client(
+                0,
+                train_data_local_dict[0],
+                test_data_local_dict[0],
+                train_data_local_num_dict[0],
+                self.args,
+                self.device,
+                model_trainer,
+                use_gradient=False,
+            )
+
         for client_idx in range(self.args.client_num_per_round):
             c = Client(
                 client_idx,
@@ -105,7 +114,7 @@ class QualityInferenceAPI(FedAvgAPI):
                 # update dataset
                 client_idx = client_indexes[idx]
 
-                if client_idx not in self.freeriders_idx:
+                if client_idx not in self.adversary_idx:
                     # normal client
                     client.update_local_dataset(
                         client_idx,
@@ -162,19 +171,23 @@ class QualityInferenceAPI(FedAvgAPI):
             logging.info("pred_credibility")
             logging.info(self.pred_credibility)
 
-            if self.args.freerider:
-                auc_crediblity = roc_auc_score(self.y_freerider, -self.pred_credibility)
+            # test result
+            if self.args.overstate or self.args.freerider:
+                auc_crediblity = roc_auc_score(self.y_adversary, -self.pred_credibility)
                 wandb.log(
                     {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
                 )
-            else:
+
+            if self.true_credibility is not None:
                 if round_idx > 0:
-                    sim_vanila = spearmanr(
+                    sim_credibility = spearmanr(
                         self.pred_credibility, self.true_credibility
                     )[0]
                 else:
-                    sim_vanila = 0
-                wandb.log({"Credibility/Spearmanr": sim_vanila, "round": round_idx})
+                    sim_credibility = 0
+                wandb.log(
+                    {"Credibility/Spearmanr": sim_credibility, "round": round_idx}
+                )
 
             prev_client_indexes = copy.deepcopy(client_indexes)
 
