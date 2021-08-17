@@ -51,6 +51,14 @@ def add_args(parser):
         help="bounr rate",
     )
 
+    parser.add_argument(
+        "--split",
+        type=str,
+        default="random",
+        metavar="S",
+        help="split type: `random`, `poor` or `rich`",
+    )
+
     return parser
 
 
@@ -81,7 +89,12 @@ if __name__ == "__main__":
     cdata["num_samples"] = cdata["num_samples"][1:]
     cdata["quality"] = []
 
-    inflated_idx = random.sample(cdata["users"], args.inflated_client_num)
+    if args.split == "random":
+        inflated_idx = random.sample(cdata["users"], args.inflated_client_num)
+    elif args.split == "poor":
+        inflated_idx = cdata["users"][: args.inflated_client_num]
+    elif args.split == "rich":
+        inflated_idx = cdata["users"][-args.inflated_client_num :]
 
     for i, idx in enumerate(cdata["users"]):
         if idx in inflated_idx:
