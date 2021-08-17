@@ -29,9 +29,6 @@ round() {
 
 client_num=20
 max_gap=1
-min_mag=30.0
-max_mag=50.0
-inflated_client_num=4
 
 # 0. prepare data
 
@@ -41,24 +38,12 @@ TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
 mkdir $TEMP_FOLDER_NAME_1/train
 mkdir $TEMP_FOLDER_NAME_1/test
 
-TEMP_FOLDER_NAME_2=`mktemp -d --tmpdir=../data`
-mkdir $TEMP_FOLDER_NAME_2/train
-mkdir $TEMP_FOLDER_NAME_2/test
-
 echo "grouping data"
 python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
 --client_num $client_num \
 --max_gap $max_gap
-
-echo "inflating data"
-python3 ./overstate.py \
---input_dir $TEMP_FOLDER_NAME_1 \
---output_dir $TEMP_FOLDER_NAME_2 \
---inflated_client_num $inflated_client_num \
---min_mag $min_mag \
---max_mag $max_mag
 
 # 1. MNIST standalone FedAvg
 cd ../src
@@ -68,7 +53,7 @@ start_time=`date +%s`
 python3 ./main.py \
 --gpu 0 \
 --dataset mnist \
---data_dir $TEMP_FOLDER_NAME_2 \
+--data_dir $TEMP_FOLDER_NAME_1 \
 --model nn \
 --partition_method hetero  \
 --client_num_in_total $client_num \
@@ -78,11 +63,9 @@ python3 ./main.py \
 --batch_size 10 \
 --client_optimizer sgd \
 --method AE \
---overstate \
+--freerider \
+--free_rider_num 4 \
 --max_gap $max_gap \
---min_mag $min_mag \
---max_mag $max_mag \
---inflated_client_num $inflated_client_num \
 --lr 0.05 \
 --ci 0
 
@@ -91,4 +74,3 @@ run_time=$((end_time - start_time))
 echo $run_time
 
 rm -rf $TEMP_FOLDER_NAME_1
-rm -rf $TEMP_FOLDER_NAME_2

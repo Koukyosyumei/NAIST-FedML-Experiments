@@ -29,9 +29,6 @@ round() {
 
 client_num=20
 max_gap=1
-min_mag=30.0
-max_mag=50.0
-inflated_client_num=4
 
 # 0. prepare data
 
@@ -52,17 +49,16 @@ python3 ./grouping.py \
 --client_num $client_num \
 --max_gap $max_gap
 
-echo "inflating data"
-python3 ./overstate.py \
+echo "flip label"
+python3 ./label-flip.py \
 --input_dir $TEMP_FOLDER_NAME_1 \
 --output_dir $TEMP_FOLDER_NAME_2 \
---inflated_client_num $inflated_client_num \
---min_mag $min_mag \
---max_mag $max_mag
+--flip_ratio 0.0
 
 # 1. MNIST standalone FedAvg
 cd ../src
 
+echo "start FedProf"
 start_time=`date +%s`
 
 python3 ./main.py \
@@ -72,18 +68,17 @@ python3 ./main.py \
 --model nn \
 --partition_method hetero  \
 --client_num_in_total $client_num \
---client_num_per_round $client_num \
+--client_num_per_round 5 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
---method AE \
---overstate \
+--method QI \
+--freerider \
+--free_rider_num 4 \
 --max_gap $max_gap \
---min_mag $min_mag \
---max_mag $max_mag \
---inflated_client_num $inflated_client_num \
 --lr 0.05 \
+--alpha 10 \
 --ci 0
 
 end_time=`date +%s`

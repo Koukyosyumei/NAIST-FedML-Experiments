@@ -63,6 +63,7 @@ python3 ./overstate.py \
 # 1. MNIST standalone FedAvg
 cd ../src
 
+echo "start FedProf"
 start_time=`date +%s`
 
 python3 ./main.py \
@@ -72,12 +73,12 @@ python3 ./main.py \
 --model nn \
 --partition_method hetero  \
 --client_num_in_total $client_num \
---client_num_per_round $client_num \
+--client_num_per_round 5 \
 --comm_round 200 \
 --epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
---method AE \
+--method QI \
 --overstate \
 --max_gap $max_gap \
 --min_mag $min_mag \

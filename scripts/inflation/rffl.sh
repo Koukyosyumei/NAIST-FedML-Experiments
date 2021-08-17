@@ -28,6 +28,10 @@ round() {
 }
 
 client_num=20
+max_gap=1
+min_mag=30.0
+max_mag=50.0
+inflated_client_num=4
 
 # 0. prepare data
 
@@ -46,15 +50,15 @@ python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
 --client_num $client_num \
---max_gap 2
+--max_gap $max_gap
 
 echo "inflating data"
 python3 ./overstate.py \
 --input_dir $TEMP_FOLDER_NAME_1 \
 --output_dir $TEMP_FOLDER_NAME_2 \
---inflated_client_num 4 \
---inflated_rate 3.0 \
---rate_bound 5.0
+--inflated_client_num $inflated_client_num \
+--min_mag $min_mag \
+--max_mag $max_mag
 
 # 1. MNIST standalone FedAvg
 cd ../src
@@ -77,6 +81,10 @@ python3 ./main.py \
 --ci 0 \
 --method RFFL \
 --overstate \
+--max_gap $max_gap \
+--min_mag $min_mag \
+--max_mag $max_mag \
+--inflated_client_num $inflated_client_num \
 --agg_weight 1 \
 --gamma 0.5 \
 --use_reputation \
