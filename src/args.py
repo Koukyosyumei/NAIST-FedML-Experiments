@@ -105,7 +105,7 @@ def add_args(parser):
     parser.add_argument(
         "--free_rider_num",
         type=int,
-        default=1,
+        default=0,
         help="number of free riders",
     )
 
@@ -135,6 +135,21 @@ def add_args(parser):
         type=float,
         default=0.5,
         help="gamma",
+    )
+
+    parser.add_argument("--max_gap", type=float, default=1.0, help="max gap")
+
+    parser.add_argument(
+        "--inflated_client_num",
+        type=int,
+        default=0,
+        help="the num of inflated_client_num",
+    )
+    parser.add_argument(
+        "--max_mag", type=float, default=1.0, help="the maximum magnification"
+    )
+    parser.add_argument(
+        "--min_mag", type=float, default=1.0, help="the minimum magnification"
     )
 
     parser.add_argument("--method", type=str, default="QI", help="federated method")
