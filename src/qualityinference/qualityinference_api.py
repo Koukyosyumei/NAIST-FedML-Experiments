@@ -40,6 +40,11 @@ class QualityInferenceAPI(FedAvgAPI):
         self.criterion = nn.CrossEntropyLoss()
         self.device = device
 
+        if self.args.overstate:
+            self.y_adversary = np.array(self.true_credibility)
+            self.y_adversary = np.where(self.y_adversary < 1, 0, 1)
+            self.adversary_idx = np.where(np.array(self.true_credibility) < 1)[0]
+
     def _setup_clients(
         self,
         train_data_local_num_dict,
@@ -48,11 +53,6 @@ class QualityInferenceAPI(FedAvgAPI):
         model_trainer,
     ):
         logging.info("############setup_clients (START)#############")
-
-        if self.args.overstate:
-            self.y_adversary = np.array(self.true_credibility)
-            self.y_adversary = np.where(self.y_adversary < 1, 0, 1)
-            self.adversary_idx = np.where(np.array(self.true_credibility) < 1)[0]
 
         if self.args.freerider:
             self.adversary_idx = random.sample(
@@ -114,7 +114,18 @@ class QualityInferenceAPI(FedAvgAPI):
                 # update dataset
                 client_idx = client_indexes[idx]
 
-                if client_idx not in self.adversary_idx:
+                if self.args.freerider and client_idx in self.adversary_idx:
+                    self.freerider.update_local_dataset(
+                        client_idx,
+                        self.train_data_local_dict[client_idx],
+                        self.test_data_local_dict[client_idx],
+                        self.train_data_local_num_dict[client_idx],
+                    )
+
+                    # train on new dataset
+                    w = self.freerider.train(copy.deepcopy(w_global))
+
+                else:
                     # normal client
                     client.update_local_dataset(
                         client_idx,
@@ -126,16 +137,6 @@ class QualityInferenceAPI(FedAvgAPI):
                     # train on new dataset
                     w = client.train(copy.deepcopy(w_global))
                     # self.logger.info("local weights = " + str(w))
-                else:
-                    self.freerider.update_local_dataset(
-                        client_idx,
-                        self.train_data_local_dict[client_idx],
-                        self.test_data_local_dict[client_idx],
-                        self.train_data_local_num_dict[client_idx],
-                    )
-
-                    # train on new dataset
-                    w = self.freerider.train(copy.deepcopy(w_global))
 
                 w_locals.append((client.get_sample_number(), copy.deepcopy(w)))
 

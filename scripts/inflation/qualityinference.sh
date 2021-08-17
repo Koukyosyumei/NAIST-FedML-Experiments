@@ -29,8 +29,8 @@ round() {
 
 client_num=20
 max_gap=1
-min_mag=30.0
-max_mag=50.0
+min_mag=3.0
+max_mag=5.0
 inflated_client_num=4
 
 # 0. prepare data
