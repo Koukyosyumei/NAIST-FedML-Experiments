@@ -36,7 +36,7 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--inflated_rate",
+        "--min_mag",
         type=float,
         default=3.0,
         metavar="IR",
@@ -44,7 +44,7 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--rate_bound",
+        "--max_mag",
         type=float,
         default=5.0,
         metavar="RB",
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         if idx in inflated_idx:
             data_size = len(cdata["user_data"][idx]["y"])
             cut_size = int(
-                random.uniform(1 / args.rate_bound, 1 / args.inflated_rate) * data_size
+                random.uniform(1 / args.max_mag, 1 / args.min_mag) * data_size
             )
             cdata["user_data"][idx]["y"] = cdata["user_data"][idx]["y"][:cut_size]
             cdata["user_data"][idx]["x"] = cdata["user_data"][idx]["x"][:cut_size]
