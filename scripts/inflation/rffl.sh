@@ -28,10 +28,11 @@ round() {
 }
 
 client_num=20
-max_gap=1
-min_mag=30.0
-max_mag=50.0
+max_gap=10
+min_mag=3.0
+max_mag=5.0
 inflated_client_num=4
+inflator="poor"
 
 # 0. prepare data
 
@@ -58,7 +59,8 @@ python3 ./overstate.py \
 --output_dir $TEMP_FOLDER_NAME_2 \
 --inflated_client_num $inflated_client_num \
 --min_mag $min_mag \
---max_mag $max_mag
+--max_mag $max_mag \
+--inflator $inflator
 
 # 1. MNIST standalone FedAvg
 cd ../src
@@ -84,6 +86,7 @@ python3 ./main.py \
 --max_gap $max_gap \
 --min_mag $min_mag \
 --max_mag $max_mag \
+--inflator $inflator \
 --inflated_client_num $inflated_client_num \
 --agg_weight 1 \
 --gamma 0.5 \

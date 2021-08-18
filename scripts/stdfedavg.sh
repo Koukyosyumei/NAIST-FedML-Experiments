@@ -28,15 +28,11 @@ round() {
 }
 
 client_num=20
-max_gap=10
-min_mag=3.0
-max_mag=5.0
-inflated_client_num=4
-inflator="rich"
+max_gap=50
 
 # 0. prepare data
 
-cd ../../data-generation
+cd ../data-generation
 
 TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
 mkdir $TEMP_FOLDER_NAME_1/train
@@ -57,10 +53,10 @@ echo "inflating data"
 python3 ./overstate.py \
 --input_dir $TEMP_FOLDER_NAME_1 \
 --output_dir $TEMP_FOLDER_NAME_2 \
---inflated_client_num $inflated_client_num \
---min_mag $min_mag \
---max_mag $max_mag \
---inflator $inflator
+--inflated_client_num 0 \
+--min_mag 1 \
+--max_mag 1 \
+--inflator "random"
 
 # 1. MNIST standalone FedAvg
 cd ../src
@@ -75,17 +71,12 @@ python3 ./main.py \
 --partition_method hetero  \
 --client_num_in_total $client_num \
 --client_num_per_round $client_num \
---comm_round 200 \
+--comm_round 15 \
 --epochs 1 \
 --batch_size 10 \
 --client_optimizer sgd \
---method AE \
---overstate \
+--method STD \
 --max_gap $max_gap \
---min_mag $min_mag \
---max_mag $max_mag \
---inflator $inflator
---inflated_client_num $inflated_client_num \
 --lr 0.05 \
 --ci 0
 
