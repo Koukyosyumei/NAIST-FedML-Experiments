@@ -52,11 +52,11 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--split",
+        "--inflator",
         type=str,
         default="random",
-        metavar="S",
-        help="split type: `random`, `poor` or `rich`",
+        metavar="IFR",
+        help="who are inflators: `random`, `poor` or `rich`",
     )
 
     return parser
@@ -89,22 +89,28 @@ if __name__ == "__main__":
     cdata["num_samples"] = cdata["num_samples"][1:]
     cdata["quality"] = []
 
-    if args.split == "random":
+    if args.inflator == "random":
         inflated_idx = random.sample(cdata["users"], args.inflated_client_num)
-    elif args.split == "poor":
+    elif args.inflator == "poor":
         inflated_idx = cdata["users"][: args.inflated_client_num]
-    elif args.split == "rich":
+    elif args.inflator == "rich":
         inflated_idx = cdata["users"][-args.inflated_client_num :]
 
     for i, idx in enumerate(cdata["users"]):
         if idx in inflated_idx:
             data_size = len(cdata["user_data"][idx]["y"])
-            cut_size = int(
-                random.uniform(1 / args.max_mag, 1 / args.min_mag) * data_size
-            )
-            cdata["user_data"][idx]["y"] = cdata["user_data"][idx]["y"][:cut_size]
-            cdata["user_data"][idx]["x"] = cdata["user_data"][idx]["x"][:cut_size]
-            cdata["quality"].append(1 - cut_size / data_size)
+            if args.inflator != "rich":
+                cut_size = int(
+                    random.uniform(1 / args.max_mag, 1 / args.min_mag) * data_size
+                )
+                cdata["user_data"][idx]["y"] = cdata["user_data"][idx]["y"][:cut_size]
+                cdata["user_data"][idx]["x"] = cdata["user_data"][idx]["x"][:cut_size]
+                cdata["quality"].append(1 - cut_size / data_size)
+            else:
+                # 富める者はより富む
+                mag = random.uniform(args.min_mag, args.max_mag)
+                cdata["num_samples"][i] *= mag
+                cdata["quality"].append(data_size / cdata["num_samples"][i])
         else:
             cdata["quality"].append(1)
 
