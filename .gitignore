@@ -4,6 +4,7 @@ wandb/
 **.e*
 **.o*
 **core.*
+*.pickle
 
 data/
 
