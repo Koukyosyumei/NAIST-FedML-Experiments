@@ -31,6 +31,7 @@ from model import create_model
 from qualityinference.qualityinference_api import QualityInferenceAPI
 from rffl.rffl_api import RFFLAPI
 from rffl.rffl_trainer import RFFL_ModelTrainer
+from std.std_api import StdFedAvgAPI
 
 
 def custom_model_trainer(args, model):
@@ -87,7 +88,7 @@ if __name__ == "__main__":
     model_trainer = custom_model_trainer(args, model)
     logging.info(model)
 
-    if not args.freerider:
+    if args.overstate:
         with open(f"{args.data_dir}/credibility_train_label_fliped.pickle", "rb") as f:
             true_credibility = pickle.load(f)
         true_credibility = true_credibility[: args.client_num_in_total]
@@ -127,3 +128,9 @@ if __name__ == "__main__":
             dataset, device, args, model_trainer, true_credibility, X_server, y_server
         )
         fedprofAPI.train()
+
+    elif args.method == "STD":
+        stdfedavgAPI = StdFedAvgAPI(
+            dataset, device, args, model_trainer, true_credibility=true_credibility
+        )
+        stdfedavgAPI.train()

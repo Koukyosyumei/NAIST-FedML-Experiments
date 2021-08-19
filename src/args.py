@@ -151,6 +151,7 @@ def add_args(parser):
     parser.add_argument(
         "--min_mag", type=float, default=1.0, help="the minimum magnification"
     )
+    parser.add_argument("--inflator", type=str, default="random", help="inflator")
 
     parser.add_argument("--method", type=str, default="QI", help="federated method")
 
