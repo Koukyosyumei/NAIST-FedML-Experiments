@@ -9,6 +9,7 @@ import numpy as np
 import psutil
 import setproctitle
 import torch
+
 import wandb
 
 # add the FedML root directory to the python path
@@ -26,6 +27,7 @@ from distributed_api import (
 )
 from distributed_args import add_args
 from distributed_dataloader import load_data
+from distributed_manager import FedAVGCrashClientManager
 from distributed_model import create_model
 from stdmonitor.std_aggregator import STDFedAVGAggregator
 
