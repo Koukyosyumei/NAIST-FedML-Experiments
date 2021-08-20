@@ -18,7 +18,7 @@ from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
 )
 
 
-def FedML_Distributed_API(
+def FedML_Distributed_Custom_API(
     process_id,
     worker_number,
     device,
@@ -33,11 +33,13 @@ def FedML_Distributed_API(
     init_server,
     init_client,
     args,
+    server_initializer,
+    client_initializer,
     model_trainer=None,
     preprocessed_sampling_lists=None,
 ):
     if process_id == 0:
-        init_server(
+        server_initializer.initialize(
             args,
             device,
             comm,
@@ -54,7 +56,7 @@ def FedML_Distributed_API(
             preprocessed_sampling_lists,
         )
     else:
-        init_client(
+        client_initializer.initialize(
             args,
             device,
             comm,
@@ -69,105 +71,121 @@ def FedML_Distributed_API(
         )
 
 
-def custom_init_server(
-    args,
-    device,
-    comm,
-    rank,
-    size,
-    model,
-    train_data_num,
-    train_data_global,
-    test_data_global,
-    train_data_local_dict,
-    test_data_local_dict,
-    train_data_local_num_dict,
-    model_trainer,
-    aggregator_class=FedAVGAggregator,
-    server_manager_class=FedAVGServerManager,
-    preprocessed_sampling_lists=None,
-):
-    if model_trainer is None:
-        if args.dataset == "stackoverflow_lr":
-            model_trainer = MyModelTrainerTAG(model)
-        elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
-            model_trainer = MyModelTrainerNWP(model)
-        else:  # default model trainer is for classification problem
-            model_trainer = MyModelTrainerCLS(model)
-    model_trainer.set_id(-1)
+class Server_Initializer:
+    def __init__(
+        self,
+        aggregator_class=FedAVGAggregator,
+        server_manager_class=FedAVGServerManager,
+    ):
+        self.aggregator_class = aggregator_class
+        self.server_manager_class = server_manager_class
 
-    # aggregator
-    worker_num = size - 1
-    aggregator = aggregator_class(
+    def initialize(
+        self,
+        args,
+        device,
+        comm,
+        rank,
+        size,
+        model,
+        train_data_num,
         train_data_global,
         test_data_global,
-        train_data_num,
         train_data_local_dict,
         test_data_local_dict,
         train_data_local_num_dict,
-        worker_num,
-        device,
-        args,
         model_trainer,
-    )
+        preprocessed_sampling_lists=None,
+    ):
 
-    # start the distributed training
-    backend = args.backend
-    if preprocessed_sampling_lists is None:
-        server_manager = server_manager_class(
-            args, aggregator, comm, rank, size, backend
-        )
-    else:
-        server_manager = server_manager_class(
+        if model_trainer is None:
+            if args.dataset == "stackoverflow_lr":
+                model_trainer = MyModelTrainerTAG(model)
+            elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
+                model_trainer = MyModelTrainerNWP(model)
+            else:  # default model trainer is for classification problem
+                model_trainer = MyModelTrainerCLS(model)
+        model_trainer.set_id(-1)
+
+        # aggregator
+        worker_num = size - 1
+        aggregator = self.aggregator_class(
+            train_data_global,
+            test_data_global,
+            train_data_num,
+            train_data_local_dict,
+            test_data_local_dict,
+            train_data_local_num_dict,
+            worker_num,
+            device,
             args,
-            aggregator,
-            comm,
-            rank,
-            size,
-            backend,
-            is_preprocessed=True,
-            preprocessed_client_lists=preprocessed_sampling_lists,
+            model_trainer,
         )
-    server_manager.send_init_msg()
-    server_manager.run()
+
+        # start the distributed training
+        backend = args.backend
+        if preprocessed_sampling_lists is None:
+            server_manager = self.server_manager_class(
+                args, aggregator, comm, rank, size, backend
+            )
+        else:
+            server_manager = self.server_manager_class(
+                args,
+                aggregator,
+                comm,
+                rank,
+                size,
+                backend,
+                is_preprocessed=True,
+                preprocessed_client_lists=preprocessed_sampling_lists,
+            )
+        server_manager.send_init_msg()
+        server_manager.run()
 
 
-def custom_init_client(
-    args,
-    device,
-    comm,
-    process_id,
-    size,
-    model,
-    train_data_num,
-    train_data_local_num_dict,
-    train_data_local_dict,
-    test_data_local_dict,
-    model_trainer=None,
-    trainer_class=FedAVGTrainer,
-    client_manager_class=FedAVGClientManager,
-):
-    client_index = process_id - 1
-    if model_trainer is None:
-        if args.dataset == "stackoverflow_lr":
-            model_trainer = MyModelTrainerTAG(model)
-        elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
-            model_trainer = MyModelTrainerNWP(model)
-        else:  # default model trainer is for classification problem
-            model_trainer = MyModelTrainerCLS(model)
-    model_trainer.set_id(client_index)
-    backend = args.backend
-    trainer = trainer_class(
-        client_index,
-        train_data_local_dict,
-        train_data_local_num_dict,
-        test_data_local_dict,
-        train_data_num,
-        device,
+class Client_Initializer:
+    def __init__(
+        self, trainer_class=FedAVGTrainer, client_manager_class=FedAVGClientManager
+    ):
+        self.trainer_class = trainer_class
+        self.client_manager_class = client_manager_class
+
+    def initialize(
+        self,
         args,
-        model_trainer,
-    )
-    client_manager = client_manager_class(
-        args, trainer, comm, process_id, size, backend
-    )
-    client_manager.run()
+        device,
+        comm,
+        process_id,
+        size,
+        model,
+        train_data_num,
+        train_data_local_num_dict,
+        train_data_local_dict,
+        test_data_local_dict,
+        model_trainer=None,
+    ):
+
+        client_index = process_id - 1
+        if model_trainer is None:
+            if args.dataset == "stackoverflow_lr":
+                model_trainer = MyModelTrainerTAG(model)
+            elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
+                model_trainer = MyModelTrainerNWP(model)
+            else:  # default model trainer is for classification problem
+                model_trainer = MyModelTrainerCLS(model)
+        model_trainer.set_id(client_index)
+        backend = args.backend
+        trainer = self.trainer_class(
+            client_index,
+            train_data_local_dict,
+            train_data_local_num_dict,
+            test_data_local_dict,
+            train_data_num,
+            device,
+            args,
+            model_trainer,
+        )
+        client_manager = self.client_manager_class(
+            args, trainer, comm, process_id, size, backend
+        )
+        client_manager.run()

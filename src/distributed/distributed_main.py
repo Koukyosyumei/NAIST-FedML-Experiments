@@ -13,14 +13,20 @@ import wandb
 
 # add the FedML root directory to the python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../FedML/")))
-from fedml_api.distributed.fedavg.FedAvgAPI import FedML_FedAvg_distributed, FedML_init
+from fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
 from fedml_api.distributed.utils.gpu_mapping import (
     mapping_processes_to_gpu_device_from_yaml_file,
 )
 
+from distributed_api import (
+    Client_Initializer,
+    FedML_Distributed_Custom_API,
+    Server_Initializer,
+)
 from distributed_args import add_args
 from distributed_dataloader import load_data
 from distributed_model import create_model
+from std.std_aggregator import STDFedAVGAggregator
 
 if __name__ == "__main__":
     # quick fix for issue in MacOS environment: https://github.com/openai/spinningup/issues/16
@@ -108,9 +114,13 @@ if __name__ == "__main__":
     # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
     model = create_model(args, model_name=args.model, output_dim=dataset[7])
 
+    # initializer
+    server_initializer = Server_Initializer(aggregator_class=STDFedAVGAggregator)
+    client_initializer = Client_Initializer()
+
     # try:
     # start "federated averaging (FedAvg)"
-    FedML_FedAvg_distributed(
+    FedML_Distributed_Custom_API(
         process_id,
         worker_number,
         device,
@@ -123,6 +133,8 @@ if __name__ == "__main__":
         train_data_local_dict,
         test_data_local_dict,
         args,
+        server_initializer,
+        client_initializer,
     )
     # except Exception as e:
     #     print(e)
