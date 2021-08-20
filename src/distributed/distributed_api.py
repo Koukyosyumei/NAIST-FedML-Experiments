@@ -1,8 +1,6 @@
 import os
 import sys
 
-from mpi4py import MPI
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../FedML/")))
 
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
@@ -134,7 +132,7 @@ def custom_init_server(
     server_manager.run()
 
 
-def init_client(
+def custom_init_client(
     args,
     device,
     comm,
