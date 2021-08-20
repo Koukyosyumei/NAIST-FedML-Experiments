@@ -37,6 +37,7 @@ class STDFedAVGAggregator(FedAVGAggregator):
             model_trainer,
         )
         self.round = 0
+        self.model_list_history = []
 
     def aggregate(self):
         start_time = time.time()
@@ -49,8 +50,11 @@ class STDFedAVGAggregator(FedAVGAggregator):
             model_list.append((self.sample_num_dict[idx], self.model_dict[idx]))
             training_num += self.sample_num_dict[idx]
 
-        with open(f"{self.round}_model_list.pickle", mode="wb") as f:
-            pickle.dump(model_list, f)
+        self.model_list_history.append(model_list)
+        self.round += 1
+        if self.round == self.args.comm_round:
+            with open("model_list_history.pickle", mode="wb") as f:
+                pickle.dump(self.model_list_history, f)
 
         logging.info("len of self.model_dict[idx] = " + str(len(self.model_dict)))
 

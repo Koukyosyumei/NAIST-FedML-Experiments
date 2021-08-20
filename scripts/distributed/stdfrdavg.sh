@@ -27,7 +27,7 @@ mpirun -npernode 2 -np 12 python3 ./distributed_main.py \
   --partition_method hetero \
   --client_num_in_total 1000 \
   --client_num_per_round 11 \
-  --comm_round 200 \
+  --comm_round 10 \
   --epochs 1 \
   --client_optimizer sgd \
   --batch_size 10 \
