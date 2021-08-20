@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../FedML/")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
 from fedml_api.distributed.fedavg.FedAvgClientManager import FedAVGClientManager
@@ -30,8 +30,6 @@ def FedML_Distributed_Custom_API(
     train_data_local_num_dict,
     train_data_local_dict,
     test_data_local_dict,
-    init_server,
-    init_client,
     args,
     server_initializer,
     client_initializer,

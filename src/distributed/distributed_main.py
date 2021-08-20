@@ -12,12 +12,13 @@ import torch
 import wandb
 
 # add the FedML root directory to the python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../FedML/")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
 from fedml_api.distributed.utils.gpu_mapping import (
     mapping_processes_to_gpu_device_from_yaml_file,
 )
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
 from distributed_api import (
     Client_Initializer,
     FedML_Distributed_Custom_API,
@@ -26,7 +27,7 @@ from distributed_api import (
 from distributed_args import add_args
 from distributed_dataloader import load_data
 from distributed_model import create_model
-from std.std_aggregator import STDFedAVGAggregator
+from stdmonitor.std_aggregator import STDFedAVGAggregator
 
 if __name__ == "__main__":
     # quick fix for issue in MacOS environment: https://github.com/openai/spinningup/issues/16

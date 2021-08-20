@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../FedML/")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.model.cv.cnn import CNN_DropOut
 from fedml_api.model.cv.efficientnet import EfficientNet
 from fedml_api.model.cv.mobilenet import mobilenet
