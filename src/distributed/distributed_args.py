@@ -142,5 +142,14 @@ def add_args(parser):
     )
 
     parser.add_argument("--ci", type=int, default=0, help="CI")
+
+    # custom arguments
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="output",
+        help="path to the dir for saving the outputs",
+    )
+
     args = parser.parse_args()
     return args

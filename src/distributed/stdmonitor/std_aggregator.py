@@ -57,7 +57,9 @@ class STDFedAVGAggregator(FedAVGAggregator):
         self.model_list_history.append(model_list)
         self.round += 1
         if self.round == self.args.comm_round:
-            with open("model_list_history.pickle", mode="wb") as f:
+            with open(
+                f"{self.args.output_dir}/model_list_history.pickle", mode="wb"
+            ) as f:
                 logging.info("saving history")
                 pickle.dump(self.model_list_history, f)
 
