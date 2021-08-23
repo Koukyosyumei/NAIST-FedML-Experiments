@@ -109,7 +109,7 @@ def add_args(parser):
     parser.add_argument(
         "--frequency_of_the_test",
         type=int,
-        default=1,
+        default=5,
         help="the frequency of the algorithms",
     )
 
