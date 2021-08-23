@@ -67,7 +67,9 @@ python3 gpu_mapping_yaml_generator.py --client_num $client_num --client_num_pern
 
 hostname > mpi_host_file
 
-mkdir ${output_dir}
+if [ ! -e ${output_dir} ]; then
+  mkdir ${output_dir}
+fi
 
 mpirun -npernode ${npernode} -np ${np} python3 ${py_file} \\
   --gpu_mapping_file ${gpu_mapping_yaml} \\
