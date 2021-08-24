@@ -12,6 +12,8 @@ from fedml_api.model.cv.resnet_gn import resnet18
 from fedml_api.model.linear.lr import LogisticRegression
 from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
 
+from models.alexnet import AlexNet
+
 
 def create_model(args, model_name, output_dim):
     logging.info(
@@ -41,6 +43,8 @@ def create_model(args, model_name, output_dim):
         model = RNN_StackOverFlow()
     elif model_name == "resnet56":
         model = resnet56(class_num=output_dim)
+    elif model_name == "alexnet":
+        model = AlexNet(class_num=output_dim)
     elif model_name == "mobilenet":
         model = mobilenet(class_num=output_dim)
     # TODO
@@ -48,6 +52,9 @@ def create_model(args, model_name, output_dim):
         """model_mode \in {LARGE: 5.15M, SMALL: 2.94M}"""
         model = MobileNetV3(model_mode="LARGE")
     elif model_name == "efficientnet":
-        model = EfficientNet()
+        # model = EfficientNet()
+        model = EfficientNet.from_name(
+            model_name="efficientnet-b0", num_classes=output_dim
+        )
 
     return model

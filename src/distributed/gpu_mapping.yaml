@@ -71,3 +71,45 @@ mapping_config_client_num_10_client_num_pernode_1_npernode_1:
     - 1
     gpu-worker9:
     - 1
+mapping_config_client_num_10_client_num_pernode_1_npernode_2:
+    gpu-worker0:
+    - 1
+    - 1
+    gpu-worker1:
+    - 1
+    - 1
+    gpu-worker2:
+    - 1
+    - 1
+    gpu-worker3:
+    - 1
+    - 1
+    gpu-worker4:
+    - 1
+    - 1
+    gpu-worker5:
+    - 1
+    - 0
+mapping_config_client_num_100_client_num_pernode_10_npernode_1:
+    gpu-worker0:
+    - 10
+    gpu-worker1:
+    - 10
+    gpu-worker10:
+    - 1
+    gpu-worker2:
+    - 10
+    gpu-worker3:
+    - 10
+    gpu-worker4:
+    - 10
+    gpu-worker5:
+    - 10
+    gpu-worker6:
+    - 10
+    gpu-worker7:
+    - 10
+    gpu-worker8:
+    - 10
+    gpu-worker9:
+    - 10
