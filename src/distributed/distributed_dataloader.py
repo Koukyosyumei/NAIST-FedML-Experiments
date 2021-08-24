@@ -2,8 +2,10 @@ import logging
 import os
 import sys
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
+from data_generation.cifar10.data_loader import load_partition_data_cifar10
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
-from fedml_api.data_preprocessing.cifar10.data_loader import load_partition_data_cifar10
 from fedml_api.data_preprocessing.cifar100.data_loader import (
     load_partition_data_cifar100,
 )
