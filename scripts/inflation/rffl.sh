@@ -36,7 +36,7 @@ inflator="poor"
 
 # 0. prepare data
 
-cd ../../data-generation
+cd ../../data_generation
 
 TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
 mkdir $TEMP_FOLDER_NAME_1/train
