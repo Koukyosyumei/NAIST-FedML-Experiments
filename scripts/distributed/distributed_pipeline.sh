@@ -60,6 +60,12 @@ echo -ne "#!/bin/sh
 module load compiler/gcc/7
 module load mpi/openmpi/3.0.0
 
+function cleanup_exit() {
+  pkill FedAvg
+}
+
+trap cleanup_exit SIGUSR2
+
 set -ex
 
 # code checking
@@ -78,7 +84,7 @@ if [ ! -e ${output_dir} ]; then
   mkdir ${output_dir}
 fi
 
-mpirun -npernode ${npernode} -np ${np} python3 ${py_file} \\
+mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --gpu_mapping_file ${gpu_mapping_yaml} \\
   --gpu_mapping_key mapping_config_client_num_${client_num}_client_num_pernode_${client_num_pernode}_npernode_${npernode} \\
   --model ${model} \\
@@ -94,9 +100,13 @@ mpirun -npernode ${npernode} -np ${np} python3 ${py_file} \\
   --batch_size ${batch_size} \\
   --lr ${lr} \\
   --ci ${ci} \\
-  --output_dir ${output_dir}" > $script_name
+  --output_dir ${output_dir}
+  
+mpirun -npernode ${npernode} -np ${np} ps aux | grep FedAvg
+mpirun -npernode ${npernode} -np ${np} pkill FedAvg
+mpirun -npernode ${npernode} -np ${np} ps aux | grep FedAvg" > $script_name
 
 # submit the auto-generated script
 if [ $submit_script -eq 1 ] ; then
-  qsub $script_name
+  qsub -notify $script_name
 fi
