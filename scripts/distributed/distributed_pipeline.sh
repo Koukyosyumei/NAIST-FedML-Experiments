@@ -102,8 +102,6 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --ci ${ci} \\
   --output_dir ${output_dir}
   
-mpirun -npernode ${npernode} -np ${np} ps aux | grep FedAvg
-mpirun -npernode ${npernode} -np ${np} pkill FedAvg
 mpirun -npernode ${npernode} -np ${np} ps aux | grep FedAvg" > $script_name
 
 # submit the auto-generated script
