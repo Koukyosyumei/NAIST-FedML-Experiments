@@ -7,7 +7,8 @@ set -ex
 # code checking
 # pyflakes .
 
-wandb login 02deeb10aa05ffa5e80eacf94128c7de1156d809 --relogin
+wandb_api_key=`cat ../wandb_api_key.txt`
+wandb login ${wandb_api_key} --relogin
 wandb online
 
 assert_eq() {
