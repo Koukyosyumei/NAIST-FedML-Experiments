@@ -1,3 +1,4 @@
+import logging
 import sys
 
 import numpy as np
@@ -178,8 +179,8 @@ class STD_DAGMM(nn.Module):
             E = torch.cat((E, e))
         return E
 
-    def fit(self, x, epochs=1):
-        optimizer = optim.Adam(self.parameters(), weight_decay=0.0001)
+    def fit(self, x, epochs=1, lr=0.01):
+        optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=0.0001)
         for i in range(epochs):
             self.train()
             enc, dec, z, gamma = self(x)
@@ -190,3 +191,5 @@ class STD_DAGMM(nn.Module):
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.parameters(), 5)
             optimizer.step()
+
+            logging.info(f"STD-DAGMM: epoch {i} - {loss.item()}")
