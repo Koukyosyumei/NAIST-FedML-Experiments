@@ -4,11 +4,13 @@ import os
 import random
 import socket
 import sys
+import traceback
 
 import numpy as np
 import psutil
 import setproctitle
 import torch
+from mpi4py import MPI
 
 import wandb
 
@@ -121,25 +123,25 @@ if __name__ == "__main__":
     server_initializer = Server_Initializer(aggregator_class=STDFedAVGAggregator)
     client_initializer = Client_Initializer()
 
-    # try:
-    # start "federated averaging (FedAvg)"
-    FedML_Distributed_Custom_API(
-        process_id,
-        worker_number,
-        device,
-        comm,
-        model,
-        train_data_num,
-        train_data_global,
-        test_data_global,
-        train_data_local_num_dict,
-        train_data_local_dict,
-        test_data_local_dict,
-        args,
-        server_initializer,
-        client_initializer,
-    )
-    # except Exception as e:
-    #     print(e)
-    #     logging.info('traceback.format_exc():\n%s' % traceback.format_exc())
-    #     MPI.COMM_WORLD.Abort()
+    try:
+        # start "federated averaging (FedAvg)"
+        FedML_Distributed_Custom_API(
+            process_id,
+            worker_number,
+            device,
+            comm,
+            model,
+            train_data_num,
+            train_data_global,
+            test_data_global,
+            train_data_local_num_dict,
+            train_data_local_dict,
+            test_data_local_dict,
+            args,
+            server_initializer,
+            client_initializer,
+        )
+    except Exception as e:
+        print(e)
+        logging.info("traceback.format_exc():\n%s" % traceback.format_exc())
+        MPI.COMM_WORLD.Abort()
