@@ -7,7 +7,8 @@ set -ex
 # code checking
 # pyflakes .
 
-wandb login 02deeb10aa05ffa5e80eacf94128c7de1156d809 --relogin
+wandb_api_key=`cat ../wandb_api_key.txt`
+wandb login $wandb_api_key --relogin
 wandb online
 
 assert_eq() {
@@ -29,8 +30,8 @@ round() {
 
 client_num=20
 max_gap=10
-min_mag=3.0
-max_mag=5.0
+min_mag=80.0
+max_mag=100.0
 inflated_client_num=4
 inflator="poor"
 
