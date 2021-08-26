@@ -49,6 +49,22 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "--inflator_num",
+        type=int,
+        default=0,
+        metavar="IN",
+        help="number of inflators in a distributed cluster",
+    )
+
+    parser.add_argument(
+        "--num_of_augmentation",
+        type=int,
+        default=0,
+        metavar="NA",
+        help="number of augmentation",
+    )
+
+    parser.add_argument(
         "--client_num_per_round",
         type=int,
         default=4,

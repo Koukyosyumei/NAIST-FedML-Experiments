@@ -1,6 +1,8 @@
 import os
 import sys
 
+import torchvision.transforms as transforms
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
@@ -16,6 +18,8 @@ from fedml_api.standalone.fedavg.my_model_trainer_nwp import (
 from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
     MyModelTrainer as MyModelTrainerTAG,
 )
+
+from inflator.inflator_model_trainer import InflatorModelTrainerCLS
 
 
 def FedML_Distributed_Custom_API(
@@ -170,7 +174,23 @@ class Client_Initializer:
             elif args.dataset in ["fed_shakespeare", "stackoverflow_nwp"]:
                 model_trainer = MyModelTrainerNWP(model)
             else:  # default model trainer is for classification problem
-                model_trainer = MyModelTrainerCLS(model)
+                if args.inflator_num > client_index:
+                    CIFAR_MEAN = [0.49139968, 0.48215827, 0.44653124]
+                    CIFAR_STD = [0.24703233, 0.24348505, 0.26158768]
+                    transform = transforms.Compose(
+                        [
+                            transforms.ToPILImage(),
+                            transforms.RandomCrop(32, padding=4),
+                            transforms.RandomHorizontalFlip(),
+                            transforms.ToTensor(),
+                            transforms.Normalize(CIFAR_MEAN, CIFAR_STD),
+                        ]
+                    )
+                    model_trainer = InflatorModelTrainerCLS(model, 
+                                                            transform=transform,
+                                                            times=args.num_of_augmentation)
+                else:
+                    model_trainer = MyModelTrainerCLS(model)
         model_trainer.set_id(client_index)
         backend = args.backend
         trainer = self.trainer_class(
