@@ -12,7 +12,7 @@ from fedml_api.model.cv.resnet_gn import resnet18
 from fedml_api.model.linear.lr import LogisticRegression
 from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
 
-from models.alexnet import AlexNet
+from custom_models.alexnet import AlexNet
 
 
 def create_model(args, model_name, output_dim):
