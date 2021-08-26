@@ -145,6 +145,14 @@ def add_args(parser):
         default=0,
         help="the num of inflated_client_num",
     )
+
+    parser.add_argument(
+        "--ghost_num",
+        type=int,
+        default=0,
+        help="the num of ghost",
+    )
+
     parser.add_argument(
         "--max_mag", type=float, default=1.0, help="the maximum magnification"
     )

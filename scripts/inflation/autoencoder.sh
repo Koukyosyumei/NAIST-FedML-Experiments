@@ -29,10 +29,11 @@ round() {
 }
 
 client_num=20
+ghost_num=0
 max_gap=10
 min_mag=80.0
 max_mag=100.0
-inflated_client_num=0
+inflated_client_num=4
 inflator="poor"
 
 # 0. prepare data
@@ -52,6 +53,7 @@ python3 ./grouping.py \
 --input_dir /work/hideaki-t/dev/FedML/data/MNIST \
 --output_dir $TEMP_FOLDER_NAME_1 \
 --client_num $client_num \
+--ghost_num $ghost_num \
 --max_gap $max_gap
 
 echo "inflating data"
@@ -87,6 +89,7 @@ python3 ./main.py \
 --max_mag $max_mag \
 --inflator $inflator
 --inflated_client_num $inflated_client_num \
+--ghost_num $ghost_num \
 --lr 0.05 \
 --ci 0
 

@@ -170,10 +170,13 @@ class AutoEncoder_API(FedAvgAPI):
 
             # test result
             if self.args.overstate or self.args.freerider:
-                auc_crediblity = roc_auc_score(self.y_adversary, self.pred_credibility)
-                wandb.log(
-                    {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
-                )
+                try:
+                    auc_crediblity = roc_auc_score(self.y_adversary, self.pred_credibility)
+                    wandb.log(
+                        {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
+                    )
+                except:
+                    pass
 
             if self.true_credibility is not None:
                 sim_credibility = spearmanr(
