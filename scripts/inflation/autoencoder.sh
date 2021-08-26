@@ -33,7 +33,7 @@ ghost_num=0
 max_gap=10
 min_mag=80.0
 max_mag=100.0
-inflated_client_num=4
+inflated_client_num=0
 inflator="poor"
 
 # 0. prepare data
