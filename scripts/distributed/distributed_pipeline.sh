@@ -60,11 +60,12 @@ echo -ne "#!/bin/sh
 module load compiler/gcc/7
 module load mpi/openmpi/3.0.0
 
-function cleanup_exit() {
-  pkill FedAvg
-}
+# function cleanup_exit() {
+#  hostname
+#  pkill FedAvg
+# }
 
-trap cleanup_exit SIGUSR2
+# trap cleanup_exit SIGUSR2
 
 set -ex
 
