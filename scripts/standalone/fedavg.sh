@@ -60,7 +60,7 @@ python3 ./overstate.py \
 --inflator "random"
 
 # 1. MNIST standalone FedAvg
-cd ../src/standalone
+cd ../standalone
 
 start_time=`date +%s`
 

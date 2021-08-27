@@ -53,7 +53,7 @@ python3 ./label-flip.py \
 --flip_ratio 0.3
 
 # 1. MNIST standalone FedAvg
-cd ../../src/data_generation
+cd ../standalone
 
 echo "start FedProf"
 start_time=`date +%s`
