@@ -21,6 +21,7 @@ from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
     MyModelTrainer as MyModelTrainerTAG,
 )
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../*/")))
 from core.gradient_trainer import GradientModelTrainerCLS
 
