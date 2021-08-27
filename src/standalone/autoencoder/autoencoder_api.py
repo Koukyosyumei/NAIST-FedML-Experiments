@@ -21,10 +21,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../FedML/
 from fedml_api.standalone.fedavg.client import Client
 from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 from standalone.autoencoder.detector import STD_DAGMM
+from standalone.fedavg.fedavg_api import FedAvgGradientAPI
 from standalone.freerider.freerider_client import FreeRider_Client
 
 
-class AutoEncoder_API(FedAvgAPI):
+class AutoEncoder_API(FedAvgGradientAPI):
     def __init__(
         self,
         dataset,
@@ -33,75 +34,23 @@ class AutoEncoder_API(FedAvgAPI):
         model_trainer,
         true_credibility=None,
     ):
-        super().__init__(dataset, device, args, model_trainer)
-        self.true_credibility = true_credibility
+        super().__init__(dataset, device, args, model_trainer, true_credibility)
         self.pred_credibility = np.array([0.0] * self.args.client_num_in_total)
         self.criterion = nn.CrossEntropyLoss()
         self.device = device
-        """
-        self.validation_model = copy.deepcopy(self.model_trainer.model)
-        self.validation_optimizer = torch.optim.SGD(
-            self.validation_model.parameters(), lr=self.args.lr
-        )
-        """
-
         self.num_parameters = torch.cat(
             [p.reshape(-1) for p in self.model_trainer.model.parameters()]
         ).shape[-1]
         self.autoencoder = STD_DAGMM(self.num_parameters, device)
 
-        if self.args.overstate:
-            self.y_adversary = np.array(true_credibility)
-            self.y_adversary = np.where(self.y_adversary < 1, 0, 1)
-            self.adversary_idx = np.where(np.array(true_credibility) < 1)[0]
-
-    def _setup_clients(
-        self,
-        train_data_local_num_dict,
-        train_data_local_dict,
-        test_data_local_dict,
-        model_trainer,
-    ):
-        logging.info("############setup_clients (START)#############")
-
-        if self.args.freerider:
-            self.adversary_idx = random.sample(
-                list(range(self.args.client_num_in_total)), self.args.free_rider_num
-            )
-            self.y_adversary = np.array([0.0] * self.args.client_num_in_total)
-            self.y_adversary[self.adversary_idx] = 1
-
-            self.freerider = FreeRider_Client(
-                0,
-                train_data_local_dict[0],
-                test_data_local_dict[0],
-                train_data_local_num_dict[0],
-                self.args,
-                self.device,
-                model_trainer,
-                use_gradient=False,
-            )
-
-        for client_idx in range(self.args.client_num_per_round):
-            c = Client(
-                client_idx,
-                train_data_local_dict[client_idx],
-                test_data_local_dict[client_idx],
-                train_data_local_num_dict[client_idx],
-                self.args,
-                self.device,
-                model_trainer,
-            )
-            self.client_list.append(c)
-        logging.info("############setup_clients (END)#############")
-
     def train(self):
+        aggregated_gradient = None
         w_global = self.model_trainer.get_model_params()
         for round_idx in range(self.args.comm_round):
 
             logging.info("################Communication round : {}".format(round_idx))
 
-            w_locals = []
+            gradient_locals = {}
 
             """
             for scalability: following the original FedAvg algorithm, we uniformly sample a fraction of clients in each round.
@@ -113,9 +62,7 @@ class AutoEncoder_API(FedAvgAPI):
             logging.info("client_indexes = " + str(client_indexes))
 
             for idx, client in enumerate(self.client_list):
-                # update dataset
                 client_idx = client_indexes[idx]
-
                 if self.args.freerider and client_idx in self.adversary_idx:
                     self.freerider.update_local_dataset(
                         client_idx,
@@ -124,38 +71,49 @@ class AutoEncoder_API(FedAvgAPI):
                         self.train_data_local_num_dict[client_idx],
                     )
 
-                    # train on new dataset
-                    w = self.freerider.train(copy.deepcopy(w_global))
+                    if round_idx > 0:
+                        # train on new dataset
+                        grad = self.freerider.train(aggregated_gradient)
+                    else:
+                        grad = self.freerider.train(None)
 
                 else:
-                    # normal client
+                    client = self.client_list[client_idx]
                     client.update_local_dataset(
                         client_idx,
                         self.train_data_local_dict[client_idx],
                         self.test_data_local_dict[client_idx],
                         self.train_data_local_num_dict[client_idx],
                     )
+                    # 学習
+                    grad = client.train(copy.deepcopy(w_global))
+                    # 更新したパラメータを保存
 
-                    # train on new dataset
-                    w = client.train(copy.deepcopy(w_global))
-                    # self.logger.info("local weights = " + str(w))
+                # upload
+                gradient_locals[client_idx] = grad
 
-                w_locals.append((client.get_sample_number(), copy.deepcopy(w)))
+            # STD-DAGMM
+            flattend_gradient_locals = torch.stack(
+                [
+                    torch.cat([g.to(self.device).reshape(-1) for g in gl[1][1]])
+                    for gl in gradient_locals.items()
+                ]
+            )
+            logging.info(
+                f"the shape of flattend_w_locals is {flattend_gradient_locals.shape}"
+            )
 
-            # update std-dagmm
-            flattend_w_locals = torch.stack(
-                [torch.cat([p.reshape(-1) for p in w[1].values()]) for w in w_locals]
-            ).to(self.device)
-            logging.info(f"the shape of flattend_w_locals is {flattend_w_locals.shape}")
-            self.autoencoder.fit(flattend_w_locals)
-            cred = self.autoencoder.predict(flattend_w_locals)
-            self.pred_credibility[client_indexes] = cred.to("cpu").detach().numpy()
-
-            logging.info(self.pred_credibility)
+            temp_client_idx = [g[0] for g in gradient_locals.items()]
+            self.autoencoder.fit(flattend_gradient_locals)
+            cred = self.autoencoder.predict(flattend_gradient_locals)
+            self.pred_credibility[temp_client_idx] = cred.to("cpu").detach().numpy()
 
             # update global weights
-            w_global = self._aggregate(w_locals)
-            self.model_trainer.set_model_params(w_global)
+            aggregated_gradient = self._aggregate(gradient_locals, round_idx)
+            self.model_trainer.set_model_gradients(
+                aggregated_gradient, self.device, weight=1
+            )
+            w_global = self.model_trainer.get_model_params()
 
             # test results
             # at last round

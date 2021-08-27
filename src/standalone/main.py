@@ -7,6 +7,7 @@ import sys
 
 import numpy as np
 import torch
+
 import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
@@ -40,6 +41,8 @@ from standalone.std.std_api import StdFedAvgAPI
 
 def custom_model_trainer(args, model):
     if args.method == "FedAvgGrad":
+        return GradientModelTrainerCLS(model)
+    elif args.method == "AE":
         return GradientModelTrainerCLS(model)
     elif args.method == "RFFL":
         return RFFL_ModelTrainer(model)

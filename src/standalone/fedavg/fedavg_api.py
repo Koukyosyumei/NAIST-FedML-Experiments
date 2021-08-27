@@ -30,7 +30,7 @@ class FedAvgGradientAPI(FedAvgAPI):
             args.client_num_in_total,
             args.client_num_per_round,
         )
-        assert args.client_num_in_total == args.client_num_per_round
+        # assert args.client_num_in_total == args.client_num_per_round
 
         self.true_credibility = true_credibility
         if self.args.overstate:
@@ -145,31 +145,6 @@ class FedAvgGradientAPI(FedAvgAPI):
                     self._local_test_on_validation_set(round_idx)
                 else:
                     self._local_test_on_all_clients(round_idx)
-
-            # test result
-            if self.args.overstate or self.args.freerider:
-                auc_crediblity = roc_auc_score(
-                    self.y_adversary, -1 * self.rs.to("cpu").detach().numpy()
-                )
-                wandb.log(
-                    {"Credibility/FreeRider-AUC": auc_crediblity, "round": round_idx}
-                )
-                wandb.log(
-                    {
-                        "Clients/Surviving FreeRider": len(
-                            list(set(self.R_set).intersection(self.adversary_idx))
-                        ),
-                        "round": round_idx,
-                    }
-                )
-
-            if self.true_credibility is not None:
-                sim_credibility = spearmanr(
-                    self.rs.to("cpu").detach().numpy(), self.true_credibility
-                )[0]
-                wandb.log(
-                    {"Credibility/Spearmanr": sim_credibility, "round": round_idx}
-                )
 
     def _aggregate(self, grad_locals, round_idx):
         """Aggerate the gradients sent by the clients
