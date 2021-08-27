@@ -7,7 +7,7 @@ set -ex
 # code checking
 # pyflakes .
 
-wandb_api_key=`cat ../wandb_api_key.txt`
+wandb_api_key=`cat wandb_api_key.txt`
 wandb login $wandb_api_key --relogin
 wandb online
 
@@ -32,7 +32,7 @@ client_num=20
 max_gap=50
 
 # 1. CIFAR10 standalone FedAvg
-cd ../../src
+cd ../../src/standalone
 
 start_time=`date +%s`
 

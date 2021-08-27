@@ -47,7 +47,7 @@ python3 ./grouping.py \
 --max_gap $max_gap
 
 # 1. MNIST standalone FedAvg
-cd ../src
+cd ../src/standalone
 
 start_time=`date +%s`
 
