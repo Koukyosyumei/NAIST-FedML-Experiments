@@ -11,6 +11,7 @@ import torch
 import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../FedML/")))
+from fedml_api.standalone.fedavg.fedavg_api import FedAvgAPI
 from fedml_api.standalone.fedavg.my_model_trainer_classification import (
     MyModelTrainer as MyModelTrainerCLS,
 )
@@ -22,20 +23,26 @@ from fedml_api.standalone.fedavg.my_model_trainer_tag_prediction import (
 )
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./*/")))
+
+
 from args import add_args
-from autoencoder.autoencoder_api import AutoEncoder_API
-from dataloader import combine_batches, load_data
-from fedprof.fedprof_api import FedProfAPI
-from focus.focus_api import FOCUSAPI
+from core.gradient_trainer import GradientModelTrainerCLS
+from dataloader import load_data
 from model import create_model
-from qualityinference.qualityinference_api import QualityInferenceAPI
-from rffl.rffl_api import RFFLAPI
-from rffl.rffl_trainer import RFFL_ModelTrainer
-from std.std_api import StdFedAvgAPI
+from standalone.autoencoder.autoencoder_api import AutoEncoder_API
+from standalone.fedavg.fedavg_api import FedAvgGradientAPI
+from standalone.fedprof.fedprof_api import FedProfAPI
+from standalone.focus.focus_api import FOCUSAPI
+from standalone.qualityinference.qualityinference_api import QualityInferenceAPI
+from standalone.rffl.rffl_api import RFFLAPI
+from standalone.rffl.rffl_trainer import RFFL_ModelTrainer
+from standalone.std.std_api import StdFedAvgAPI
 
 
 def custom_model_trainer(args, model):
-    if args.method == "RFFL":
+    if args.method == "FedAvgGrad":
+        return GradientModelTrainerCLS(model)
+    elif args.method == "RFFL":
         return RFFL_ModelTrainer(model)
     elif args.dataset == "stackoverflow_lr":
         return MyModelTrainerTAG(model)
@@ -101,7 +108,17 @@ if __name__ == "__main__":
         with open(f"{args.data_dir}/y_server.pickle", "rb") as inf:
             y_server = torch.Tensor(pickle.load(inf))
 
-    if args.method == "QI":
+    if args.method == "FedAvg":
+        fedavg_API = FedAvgAPI(dataset, device, args, model_trainer)
+        fedavg_API.train()
+
+    if args.method == "FedAvgGrad":
+        fedavg_API = FedAvgGradientAPI(
+            dataset, device, args, model_trainer, true_credibility
+        )
+        fedavg_API.train()
+
+    elif args.method == "QI":
         qualityinferenceAPI = QualityInferenceAPI(
             dataset, device, args, model_trainer, true_credibility, X_server, y_server
         )
