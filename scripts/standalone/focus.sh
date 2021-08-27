@@ -32,11 +32,11 @@ round() {
 
 cd ../../data_generation
 
-TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
+TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../../data`
 mkdir $TEMP_FOLDER_NAME_1/train
 mkdir $TEMP_FOLDER_NAME_1/test
 
-TEMP_FOLDER_NAME_2=`mktemp -d --tmpdir=../data`
+TEMP_FOLDER_NAME_2=`mktemp -d --tmpdir=../../data`
 mkdir $TEMP_FOLDER_NAME_2/train
 mkdir $TEMP_FOLDER_NAME_2/test
 
@@ -53,7 +53,7 @@ python3 ./label-flip.py \
 --flip_ratio 0.3
 
 # 1. MNIST standalone FedAvg
-cd ../src/standalone
+cd ../../src/data_generation
 
 echo "start FedProf"
 start_time=`date +%s`

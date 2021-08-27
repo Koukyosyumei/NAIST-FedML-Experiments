@@ -32,7 +32,7 @@ client_num=20
 max_gap=50
 
 # 1. CIFAR10 standalone FedAvg
-cd ../../src/standalone
+cd ../../src/data_generation
 
 start_time=`date +%s`
 

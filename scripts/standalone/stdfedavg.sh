@@ -35,11 +35,11 @@ max_gap=50
 
 cd ../../data_generation
 
-TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
+TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../../data`
 mkdir $TEMP_FOLDER_NAME_1/train
 mkdir $TEMP_FOLDER_NAME_1/test
 
-TEMP_FOLDER_NAME_2=`mktemp -d --tmpdir=../data`
+TEMP_FOLDER_NAME_2=`mktemp -d --tmpdir=../../data`
 mkdir $TEMP_FOLDER_NAME_2/train
 mkdir $TEMP_FOLDER_NAME_2/test
 
@@ -60,7 +60,7 @@ python3 ./overstate.py \
 --inflator "random"
 
 # 1. MNIST standalone FedAvg
-cd ../src/standalone
+cd ../../src/data_generation
 
 start_time=`date +%s`
 

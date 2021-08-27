@@ -33,9 +33,9 @@ max_gap=1
 
 # 0. prepare data
 
-cd ../../../data_generation
+cd ../../../src/data_generation
 
-TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../data`
+TEMP_FOLDER_NAME_1=`mktemp -d --tmpdir=../../data`
 mkdir $TEMP_FOLDER_NAME_1/train
 mkdir $TEMP_FOLDER_NAME_1/test
 
