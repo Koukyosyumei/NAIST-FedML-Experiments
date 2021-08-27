@@ -133,6 +133,7 @@ class FedAvgGradientAPI(FedAvgAPI):
             self.model_trainer.set_model_gradients(
                 aggregated_gradient, self.device, weight=1
             )
+            w_global = self.model_trainer.get_model_params()
 
             # test results
             # at last round
