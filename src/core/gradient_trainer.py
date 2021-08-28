@@ -21,7 +21,7 @@ class GradientModelTrainerCLS(MyModelTrainer):
         gradient = [grad.to(device) for grad in gradient]
 
         for param, grad in zip(self.model.parameters(), gradient):
-            param.data += weight * grad.data
+            param.data -= weight * grad.data
 
     def train(self, train_data, device, args):
         model = self.model
