@@ -18,6 +18,9 @@ from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelT
 class GradientModelTrainerCLS(MyModelTrainer):
     def set_model_gradients(self, gradient, device, weight=1):
         self.model.to(device)
+        for g in gradient:
+            if type(g) == str:
+                logging.info(f"str gradient = {g}")
         gradient = [grad.to(device) for grad in gradient]
 
         for param, grad in zip(self.model.parameters(), gradient):

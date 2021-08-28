@@ -2,6 +2,8 @@ import logging
 import os
 import sys
 
+from .utils import transform_grad_to_list
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../../FedML/")))
 from fedml_api.distributed.fedavg.FedAvgServerManager import FedAVGServerManager
 from fedml_api.distributed.fedavg.message_define import MyMessage
@@ -47,6 +49,8 @@ class SecureFedAVGServerManager(FedAVGServerManager):
                 )
             else:
                 global_model_params = self.aggregator.aggregate()
+
+            logging.info("Start Anomaly Detection")
             self.aggregator.anomalydetection(self.sender_id_to_client_index)
             self.aggregator.test_on_server_for_all_clients(self.round_idx)
 
@@ -78,7 +82,7 @@ class SecureFedAVGServerManager(FedAVGServerManager):
                 for receiver_id in range(1, self.size):
                     params = reward_gradients[client_indexes[receiver_id - 1]]
                     if self.args.is_mobile == 1:
-                        params = transform_tensor_to_list(params)
+                        params = transform_grad_to_list(params)
                     self.send_message_sync_model_to_client(
                         receiver_id,
                         params,
