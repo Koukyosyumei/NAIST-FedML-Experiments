@@ -174,5 +174,16 @@ def add_args(parser):
         help="type of method",
     )
 
+    parser.add_argument(
+        "--adversary_num", type=int, default=2, help="number of adversaries"
+    )
+
+    parser.add_argument(
+        "--adversary_type",
+        type="str",
+        default="freerider",
+        help="freerider or inflator",
+    )
+
     args = parser.parse_args()
     return args
