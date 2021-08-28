@@ -8,7 +8,7 @@ from torch import nn
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
-from core.utils import compute_grad_update
+from .utils import compute_grad_update
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
@@ -16,22 +16,6 @@ from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelT
 
 
 class GradientModelTrainerCLS(MyModelTrainer):
-    """
-    def get_model_gradients(self, gamma=0.5):
-        grads = self.grads
-        # logging.info("before normalize")
-        # logging.info(grads)
-        flattened = flatten(grads)
-        norm_value = norm(flattened) + 1e-7  # to prevent division by zero
-        grads = unflatten(
-            torch.multiply(torch.tensor(gamma), torch.div(flattened, norm_value)),
-            grads,
-        )
-        # logging.info("after normalize")
-        # logging.info(grads)
-        return grads
-    """
-
     def set_model_gradients(self, gradient, device, weight=1):
         self.model.to(device)
         gradient = [grad.to(device) for grad in gradient]
@@ -39,7 +23,7 @@ class GradientModelTrainerCLS(MyModelTrainer):
         for param, grad in zip(self.model.parameters(), gradient):
             param.data += weight * grad.data
 
-    def train(self, train_data, device, local_sample_number, args):
+    def train(self, train_data, device, args):
         model = self.model
 
         model.to(device)
@@ -88,3 +72,27 @@ class GradientModelTrainerCLS(MyModelTrainer):
 
         grads = compute_grad_update(old_model=backup, new_model=model)
         return grads
+
+    def test(self, test_data, device, args):
+        model = self.model
+
+        model.to(device)
+
+        metrics = {"test_correct": 0, "test_loss": 0, "test_total": 0}
+
+        criterion = nn.CrossEntropyLoss().to(device)
+
+        with torch.no_grad():
+            for batch_idx, (x, target) in enumerate(test_data):
+                x = x.to(device)
+                target = target.to(device)
+                pred = model(x)
+                loss = criterion(pred, target)
+
+                _, predicted = torch.max(pred, -1)
+                correct = predicted.eq(target).sum()
+
+                metrics["test_correct"] += correct.item()
+                metrics["test_loss"] += loss.item() * target.size(0)
+                metrics["test_total"] += target.size(0)
+        return metrics
