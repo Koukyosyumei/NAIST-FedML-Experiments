@@ -41,7 +41,13 @@ class SecureFedAVGServerManager(FedAVGServerManager):
         b_all_received = self.aggregator.check_whether_all_receive()
         logging.info("b_all_received = " + str(b_all_received))
         if b_all_received:
-            global_model_params = self.aggregator.aggregate()
+            if self.args.method == "RFFL":
+                reward_gradients = self.aggregator.aggregate(
+                    self.sender_id_to_client_index
+                )
+            else:
+                global_model_params = self.aggregator.aggregate()
+            self.aggregator.anomalydetection(self.sender_id_to_client_index)
             self.aggregator.test_on_server_for_all_clients(self.round_idx)
 
             # start the next round
@@ -67,10 +73,24 @@ class SecureFedAVGServerManager(FedAVGServerManager):
 
             print("indexes of clients: " + str(client_indexes))
             print("size = %d" % self.size)
-            if self.args.is_mobile == 1:
-                global_model_params = transform_tensor_to_list(global_model_params)
 
-            for receiver_id in range(1, self.size):
-                self.send_message_sync_model_to_client(
-                    receiver_id, global_model_params, client_indexes[receiver_id - 1]
-                )
+            if self.args.method == "RFFL":
+                for receiver_id in range(1, self.size):
+                    params = reward_gradients[client_indexes[receiver_id - 1]]
+                    if self.args.is_mobile == 1:
+                        params = transform_tensor_to_list(params)
+                    self.send_message_sync_model_to_client(
+                        receiver_id,
+                        params,
+                        client_indexes[receiver_id - 1],
+                    )
+            else:
+                if self.args.is_mobile == 1:
+                    global_model_params = transform_tensor_to_list(global_model_params)
+
+                for receiver_id in range(1, self.size):
+                    self.send_message_sync_model_to_client(
+                        receiver_id,
+                        global_model_params,
+                        client_indexes[receiver_id - 1],
+                    )
