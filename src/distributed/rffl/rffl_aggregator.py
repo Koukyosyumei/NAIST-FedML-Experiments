@@ -34,7 +34,7 @@ class RFFLAggregator(FedAVGAggregator):
         device,
         args,
         model_trainer,
-        adversary_flag,
+        adversary_flag=None,
     ):
         super().__init__(
             train_global,

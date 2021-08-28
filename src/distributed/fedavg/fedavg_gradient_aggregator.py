@@ -1,7 +1,6 @@
 import copy
 import logging
 import os
-import pickle
 import sys
 import time
 
@@ -30,6 +29,7 @@ class FedAVGGradientAggregator(FedAVGAggregator):
         device,
         args,
         model_trainer,
+        adversary_flag=None,
     ):
         super().__init__(
             train_global,

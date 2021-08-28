@@ -8,8 +8,8 @@ from sklearn.metrics import roc_auc_score
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
-from distributed.fedavg.fedavg_gradient_aggregator import \
-    FedAVGGradientAggregator
+from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
+from standalone.autoencoder.detector import STD_DAGMM
 
 
 class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
@@ -25,8 +25,7 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
         device,
         args,
         model_trainer,
-        autoencoder,
-        adversary_flag,
+        adversary_flag=None,
     ):
         super().__init__(
             train_global,
@@ -41,10 +40,14 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
             model_trainer,
         )
         self.model_list_history = []
-        self.autoencoder = autoencoder
         self.adversary_flag = adversary_flag
         self.pred_credibility = np.zeros(len(adversary_flag))
         self.round_idx = 0
+
+        self.num_parameters = torch.cat(
+            [p.reshape(-1) for p in model_trainer.model.parameters()]
+        ).shape[-1]
+        self.autoencoder = STD_DAGMM(self.num_parameters, device)
 
     def anomalydetection(self, sender_id_to_client_index):
         model_list = []

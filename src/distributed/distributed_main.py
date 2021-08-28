@@ -38,14 +38,25 @@ from core.distributed_api import (
 )
 from core.gradient_trainer import GradientModelTrainerCLS
 
+from autoencoder.autoencoder_aggregator import FedAVGAutoEncoderAggregator
 from distributed_args import add_args
 from distributed_dataloader import load_data
 from distributed_model import create_model
 from fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
 from fedavg.fedavg_gradient_trainer import FedAVGGradTrainer
+from freerider.freerider_modeltrainer import FreeriderModelTrainer
+from qualityinference.qualityinference_aggregator import (
+    FedAVGQualityInferenceAggregator,
+)
+from rffl.rffl_aggregator import RFFLAggregator
+from rffl.rffl_trainer import RFFLTrainer
 from stdmonitor.std_aggregator import STDFedAVGAggregator
 
+SEED = 42
+
 if __name__ == "__main__":
+    random.seed(SEED)
+
     # quick fix for issue in MacOS environment: https://github.com/openai/spinningup/issues/16
     if sys.platform == "darwin":
         os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
@@ -130,9 +141,21 @@ if __name__ == "__main__":
         trainer_class = FedAVGTrainer
         aggregator_class = FedAVGAggregator
         model_trainer_class = MyModelTrainerCLS
-    if args.method == "FedAvgGrad":
+    elif args.method == "FedAvgGrad":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGGradientAggregator
+        model_trainer_class = GradientModelTrainerCLS
+    elif args.method == "QI":
+        trainer_class = FedAVGGradTrainer
+        aggregator_class = FedAVGQualityInferenceAggregator
+        model_trainer_class = GradientModelTrainerCLS
+    elif args.method == "RFFL":
+        trainer_class = RFFLTrainer
+        aggregator_class = RFFLAggregator
+        model_trainer_class = GradientModelTrainerCLS
+    elif args.method == "AE":
+        trainer_class = FedAVGGradTrainer
+        aggregator_class = FedAVGAutoEncoderAggregator
         model_trainer_class = GradientModelTrainerCLS
 
     # create model.
@@ -140,6 +163,16 @@ if __name__ == "__main__":
     # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
     model = create_model(args, model_name=args.model, output_dim=dataset[7])
     model_trainer = model_trainer_class(model)
+
+    # decive adversaries
+    adversary_idx = random.choice(
+        list(range(args.client_num_in_total)), args.adversary_num
+    )
+    adversary_flag = np.zeros(args.client_num_in_total)
+    adversary_flag[adversary_idx] += 1
+    logging.info(f"######## adversary_flag = {adversary_flag} ########")
+    if adversary_idx[process_id - 1] == 1:
+        trainer_class = FreeriderModelTrainer
 
     # initializer
     server_initializer = Server_Initializer(aggregator_class=aggregator_class)
