@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -41,7 +42,7 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
         )
         self.model_list_history = []
         self.adversary_flag = adversary_flag
-        self.pred_credibility = np.zeros(len(adversary_flag))
+        self.pred_credibility = np.zeros_like(adversary_flag)
         self.round_idx = 0
 
         self.num_parameters = torch.cat(
@@ -53,11 +54,13 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
         model_list = []
         client_index = []
 
+        logging.info(f"sender_id_to_client_index = {sender_id_to_client_index}")
+
         for idx in range(self.worker_num):
             if self.args.is_mobile == 1:
                 self.model_dict[idx] = transform_list_to_grad(self.model_dict[idx])
             model_list.append((self.sample_num_dict[idx], self.model_dict[idx]))
-            client_index.append(sender_id_to_client_index[idx])
+            client_index.append(sender_id_to_client_index[idx + 1])
 
         # parameter-checking with autoencoder
         flattend_gradient_locals = torch.stack(
@@ -68,6 +71,9 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
         )
         self.autoencoder.fit(flattend_gradient_locals)
         cred = self.autoencoder.predict(flattend_gradient_locals)
+        print("self.adversary_flag", self.adversary_flag)
+        print("self.pred_credibility", self.pred_credibility)
+        print("client_index", client_index)
         self.pred_credibility[client_index] = cred.to("cpu").detach().numpy()
         auc_crediblity = roc_auc_score(self.adversary_flag, self.pred_credibility)
         wandb.log(

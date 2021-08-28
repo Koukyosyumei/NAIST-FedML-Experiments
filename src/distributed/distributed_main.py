@@ -21,6 +21,7 @@ import wandb
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
 from fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
+from fedml_api.distributed.fedavg.FedAvgClientManager import FedAVGClientManager
 from fedml_api.distributed.fedavg.FedAVGTrainer import FedAVGTrainer
 from fedml_api.distributed.utils.gpu_mapping import (
     mapping_processes_to_gpu_device_from_yaml_file,
@@ -36,6 +37,7 @@ from core.distributed_api import (
     FedML_Distributed_Custom_API,
     Server_Initializer,
 )
+from core.distributed_secure_server_manager import SecureFedAVGServerManager
 from core.gradient_trainer import GradientModelTrainerCLS
 
 from autoencoder.autoencoder_aggregator import FedAVGAutoEncoderAggregator
@@ -49,6 +51,7 @@ from qualityinference.qualityinference_aggregator import (
     FedAVGQualityInferenceAggregator,
 )
 from rffl.rffl_aggregator import RFFLAggregator
+from rffl.rffl_clientmanager import RFFLClientManager
 from rffl.rffl_trainer import RFFLTrainer
 from stdmonitor.std_aggregator import STDFedAVGAggregator
 
@@ -99,7 +102,7 @@ if __name__ == "__main__":
         wandb.init(
             # project="federated_nas",
             project="fedml",
-            name="FedAVG(d)"
+            name=args.method
             + str(args.partition_method)
             + "r"
             + str(args.comm_round)
@@ -141,22 +144,39 @@ if __name__ == "__main__":
         trainer_class = FedAVGTrainer
         aggregator_class = FedAVGAggregator
         model_trainer_class = MyModelTrainerCLS
+        client_manager_class = FedAVGClientManager
     elif args.method == "FedAvgGrad":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGGradientAggregator
         model_trainer_class = GradientModelTrainerCLS
+        client_manager_class = FedAVGClientManager
     elif args.method == "QI":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGQualityInferenceAggregator
         model_trainer_class = GradientModelTrainerCLS
+        client_manager_class = FedAVGClientManager
     elif args.method == "RFFL":
         trainer_class = RFFLTrainer
         aggregator_class = RFFLAggregator
         model_trainer_class = GradientModelTrainerCLS
+        client_manager_class = RFFLClientManager
     elif args.method == "AE":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGAutoEncoderAggregator
         model_trainer_class = GradientModelTrainerCLS
+        client_manager_class = FedAVGClientManager
+
+    # decive adversaries
+    adversary_idx = random.sample(
+        list(range(args.client_num_in_total)), args.adversary_num
+    )
+    adversary_flag = np.zeros(args.client_num_in_total).astype(int)
+    adversary_flag[adversary_idx] += 1
+    logging.info(f"######## adversary_idx = {adversary_idx} ########")
+    logging.info(f"######## adversary_flag = {adversary_flag} ########")
+    if process_id - 1 in adversary_idx == 1:
+        logging.info(f"####### process_id = {process_id} is FreeRider #######")
+        model_trainer_class = FreeriderModelTrainer
 
     # create model.
     # Note if the model is DNN (e.g., ResNet), the training will be very slow.
@@ -164,19 +184,14 @@ if __name__ == "__main__":
     model = create_model(args, model_name=args.model, output_dim=dataset[7])
     model_trainer = model_trainer_class(model)
 
-    # decive adversaries
-    adversary_idx = random.choice(
-        list(range(args.client_num_in_total)), args.adversary_num
-    )
-    adversary_flag = np.zeros(args.client_num_in_total)
-    adversary_flag[adversary_idx] += 1
-    logging.info(f"######## adversary_flag = {adversary_flag} ########")
-    if adversary_idx[process_id - 1] == 1:
-        trainer_class = FreeriderModelTrainer
-
     # initializer
-    server_initializer = Server_Initializer(aggregator_class=aggregator_class)
-    client_initializer = Client_Initializer(trainer_class=trainer_class)
+    server_initializer = Server_Initializer(
+        aggregator_class=aggregator_class,
+        server_manager_class=SecureFedAVGServerManager,
+    )
+    client_initializer = Client_Initializer(
+        trainer_class=trainer_class, client_manager_class=client_manager_class
+    )
 
     try:
         # start "federated averaging (FedAvg)"
@@ -196,8 +211,9 @@ if __name__ == "__main__":
             server_initializer,
             client_initializer,
             model_trainer,
+            adversary_flag=adversary_flag,
         )
     except Exception as e:
-        print(e)
+        logging.info(e)
         logging.info("traceback.format_exc():\n%s" % traceback.format_exc())
         MPI.COMM_WORLD.Abort()

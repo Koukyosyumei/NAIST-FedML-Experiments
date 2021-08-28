@@ -180,9 +180,16 @@ def add_args(parser):
 
     parser.add_argument(
         "--adversary_type",
-        type="str",
+        type=str,
         default="freerider",
         help="freerider or inflator",
+    )
+
+    parser.add_argument(
+        "--free_rider_strategy",
+        type=str,
+        default="random",
+        help="strategy of free-riders",
     )
 
     args = parser.parse_args()
