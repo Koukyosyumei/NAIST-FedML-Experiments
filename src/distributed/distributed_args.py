@@ -167,5 +167,12 @@ def add_args(parser):
         help="path to the dir for saving the outputs",
     )
 
+    parser.add_argument(
+        "--method",
+        type=str,
+        default="FedAvgGrad",
+        help="type of method",
+    )
+
     args = parser.parse_args()
     return args

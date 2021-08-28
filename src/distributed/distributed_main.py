@@ -6,11 +6,12 @@ import socket
 import sys
 import traceback
 
+import mpi4py
 import numpy as np
 import psutil
 import setproctitle
 import torch
-import mpi4py
+
 mpi4py.rc.recv_mprobe = False
 from mpi4py import MPI
 
@@ -18,20 +19,30 @@ import wandb
 
 # add the FedML root directory to the python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
+from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
 from fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
+from fedml_api.distributed.fedavg.FedAVGTrainer import FedAVGTrainer
 from fedml_api.distributed.utils.gpu_mapping import (
     mapping_processes_to_gpu_device_from_yaml_file,
 )
+from fedml_api.standalone.fedavg.my_model_trainer_classification import (
+    MyModelTrainer as MyModelTrainerCLS,
+)
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
-from distributed_api import (
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
+from core.distributed_api import (
     Client_Initializer,
     FedML_Distributed_Custom_API,
     Server_Initializer,
 )
+from core.gradient_trainer import GradientModelTrainerCLS
+
 from distributed_args import add_args
 from distributed_dataloader import load_data
 from distributed_model import create_model
+from fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
+from fedavg.fedavg_gradient_trainer import FedAVGGradTrainer
 from stdmonitor.std_aggregator import STDFedAVGAggregator
 
 if __name__ == "__main__":
@@ -115,14 +126,24 @@ if __name__ == "__main__":
         class_num,
     ] = dataset
 
+    if args.method == "FedAvg":
+        trainer_class = FedAVGTrainer
+        aggregator_class = FedAVGAggregator
+        model_trainer_class = MyModelTrainerCLS
+    if args.method == "FedAvgGrad":
+        trainer_class = FedAVGGradTrainer
+        aggregator_class = FedAVGGradientAggregator
+        model_trainer_class = GradientModelTrainerCLS
+
     # create model.
     # Note if the model is DNN (e.g., ResNet), the training will be very slow.
     # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
     model = create_model(args, model_name=args.model, output_dim=dataset[7])
+    model_trainer = model_trainer_class(model)
 
     # initializer
-    server_initializer = Server_Initializer(aggregator_class=STDFedAVGAggregator)
-    client_initializer = Client_Initializer()
+    server_initializer = Server_Initializer(aggregator_class=aggregator_class)
+    client_initializer = Client_Initializer(trainer_class=trainer_class)
 
     try:
         # start "federated averaging (FedAvg)"
@@ -141,6 +162,7 @@ if __name__ == "__main__":
             args,
             server_initializer,
             client_initializer,
+            model_trainer,
         )
     except Exception as e:
         print(e)
