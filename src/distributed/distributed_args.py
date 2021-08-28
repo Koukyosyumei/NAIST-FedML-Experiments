@@ -101,6 +101,22 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "--clip_grad",
+        type=int,
+        default=1,
+        metavar="CG",
+        help="1 (on) or 0 (off)",
+    )
+
+    parser.add_argument(
+        "--max_norm",
+        type=float,
+        default=0.5,
+        metavar="MN",
+        help="max_norm",
+    )
+
+    parser.add_argument(
         "--epochs",
         type=int,
         default=5,

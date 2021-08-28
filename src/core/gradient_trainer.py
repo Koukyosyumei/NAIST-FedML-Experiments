@@ -12,7 +12,8 @@ from .utils import compute_grad_update
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
-from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelTrainer
+from fedml_api.standalone.fedavg.my_model_trainer_classification import \
+    MyModelTrainer
 
 
 class GradientModelTrainerCLS(MyModelTrainer):
@@ -58,7 +59,8 @@ class GradientModelTrainerCLS(MyModelTrainer):
                 loss = criterion(log_probs, labels)
                 loss.backward()
 
-                # torch.nn.utils.clip_grad_norm_(model.parameters(), args.gamma)
+                if args.clip_grad == 1:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_norm)
 
                 optimizer.step()
                 # logging.info('Update Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
