@@ -34,6 +34,7 @@ def FedML_Distributed_Custom_API(
     server_initializer,
     client_initializer,
     model_trainer,
+    adversary_flag=None,
     preprocessed_sampling_lists=None,
 ):
     if process_id == 0:
@@ -51,7 +52,8 @@ def FedML_Distributed_Custom_API(
             test_data_local_dict,
             train_data_local_num_dict,
             model_trainer,
-            preprocessed_sampling_lists,
+            adversary_flag=adversary_flag,
+            preprocessed_sampling_lists=preprocessed_sampling_lists,
         )
     else:
         client_initializer.initialize(
@@ -93,6 +95,7 @@ class Server_Initializer:
         test_data_local_dict,
         train_data_local_num_dict,
         model_trainer,
+        adversary_flag=None,
         preprocessed_sampling_lists=None,
     ):
         model_trainer.set_id(-1)
@@ -110,6 +113,7 @@ class Server_Initializer:
             device,
             args,
             model_trainer,
+            adversary_flag=adversary_flag,
         )
 
         # start the distributed training
