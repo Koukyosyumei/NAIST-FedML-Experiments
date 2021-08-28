@@ -40,7 +40,7 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
         )
         self.model_list_history = []
         self.adversary_flag = adversary_flag
-        self.pred_credibility = np.zeros(len(adversary_flag))
+        self.pred_credibility = np.zeros_like(adversary_flag)
         self.round_idx = 0
 
         self.acc_improve_curr = 0
@@ -52,7 +52,7 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
     def anomalydetection(self, sender_id_to_client_index):
         client_index = []
         for idx in range(self.worker_num):
-            client_index.append(sender_id_to_client_index[idx])
+            client_index.append(sender_id_to_client_index[idx + 1])
 
         test_num_samples = []
         test_tot_corrects = []
