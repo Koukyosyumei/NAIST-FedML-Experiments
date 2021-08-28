@@ -15,7 +15,8 @@ client_optimizer=${14}
 batch_size=${15}
 lr=${16}
 ci=${17}
-submit_script=${18}
+method=${18}
+submit_script=${19}
 
 # check the arguments
 
@@ -35,6 +36,7 @@ echo "client_optimizer=${client_optimizer}"
 echo "batch_size=${batch_size}"
 echo "lr=${lr}"
 echo "ci=${ci}"
+echo "metho=${method}"
 echo "submit_script=${submit_script}"
 
 # preparation
@@ -101,6 +103,7 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --batch_size ${batch_size} \\
   --lr ${lr} \\
   --ci ${ci} \\
+  --method ${method} \\
   --output_dir ${output_dir}
   
 mpirun -npernode ${npernode} -np ${np} ps aux | grep FedAvg" > $script_name
