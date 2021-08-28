@@ -9,7 +9,7 @@ class GradientClient(Client):
     def train(self, w_global):
         self.model_trainer.set_model_params(w_global)
         grad_local = self.model_trainer.train(
-            self.local_training_data, self.device, self.local_sample_number, self.args
+            self.local_training_data, self.device, self.args
         )
         return (self.local_sample_number, grad_local)
 
