@@ -58,7 +58,7 @@ class RFFLAggregator(FedAVGGradientAggregator):
         self.rs = torch.zeros(args.client_num_in_total, device=device)
         self.R_set = list(range(args.client_num_in_total))
         self.relative_size = [0] * args.client_num_in_total
-        self.threshold = 1 / (30 * args.client_num_in_total)
+        self.threshold = 1 / (10 * args.client_num_in_total)
         self.warm_up = 10
         self.alpha = 0.95
         self.remove = True
