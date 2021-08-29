@@ -47,5 +47,5 @@ class FreeriderModelTrainer(GradientModelTrainerCLS):
         return fake_gradients
 
     def test(self, test_data, device, args):
-        metrics = {"test_correct": -1, "test_loss": 0, "test_total": 0}
+        metrics = {"test_correct": 0, "test_loss": 0, "test_total": 0}
         return metrics
