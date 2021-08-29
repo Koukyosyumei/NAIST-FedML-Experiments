@@ -45,7 +45,7 @@ class FedAVGGradientAggregator(FedAVGAggregator):
             model_trainer,
         )
         self.model_list_history = {c: [] for c in range(args.client_num_in_total)}
-        self.round = 0
+        self.round_idx = 0
 
     def set_global_model_gradients(self, model_gradients, device, weight=1):
         self.trainer.set_model_gradients(model_gradients, device, weight=1)
@@ -67,8 +67,8 @@ class FedAVGGradientAggregator(FedAVGAggregator):
                 (self.sample_num_dict[idx], self.model_dict[idx])
             )
 
-        self.round += 1
-        if self.round == self.args.comm_round:
+        self.round_idx += 1
+        if self.round_idx == self.args.comm_round:
             with open(
                 f"{self.args.output_dir}/model_list_history.pickle", mode="wb"
             ) as f:
