@@ -111,7 +111,7 @@ def add_args(parser):
     parser.add_argument(
         "--max_norm",
         type=float,
-        default=0.5,
+        default=5.0,
         metavar="MN",
         help="max_norm",
     )
@@ -186,7 +186,7 @@ def add_args(parser):
     parser.add_argument(
         "--method",
         type=str,
-        default="FedAvgGrad",
+        default="FedAvg",
         help="type of method",
     )
 
@@ -204,8 +204,15 @@ def add_args(parser):
     parser.add_argument(
         "--free_rider_strategy",
         type=str,
-        default="random",
+        default="advanced-delta",
         help="strategy of free-riders",
+    )
+
+    parser.add_argument(
+        "--water_powered_magnification",
+        type=float,
+        default=1.0,
+        help="water-powered magnification",
     )
 
     args = parser.parse_args()

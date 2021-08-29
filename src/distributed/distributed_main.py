@@ -21,21 +21,22 @@ import wandb
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
 from fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
-from fedml_api.distributed.fedavg.FedAvgClientManager import \
-    FedAVGClientManager
-from fedml_api.distributed.fedavg.FedAvgServerManager import \
-    FedAVGServerManager
+from fedml_api.distributed.fedavg.FedAvgServerManager import FedAVGServerManager
 from fedml_api.distributed.fedavg.FedAVGTrainer import FedAVGTrainer
-from fedml_api.distributed.utils.gpu_mapping import \
-    mapping_processes_to_gpu_device_from_yaml_file
-from fedml_api.standalone.fedavg.my_model_trainer_classification import \
-    MyModelTrainer as MyModelTrainerCLS
+from fedml_api.distributed.utils.gpu_mapping import (
+    mapping_processes_to_gpu_device_from_yaml_file,
+)
+from fedml_api.standalone.fedavg.my_model_trainer_classification import (
+    MyModelTrainer as MyModelTrainerCLS,
+)
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
-from core.distributed_api import (Client_Initializer,
-                                  FedML_Distributed_Custom_API,
-                                  Server_Initializer)
+from core.distributed_api import (
+    Client_Initializer,
+    FedML_Distributed_Custom_API,
+    Server_Initializer,
+)
 from core.distributed_secure_server_manager import SecureFedAVGServerManager
 from core.gradient_trainer import GradientModelTrainerCLS
 
@@ -46,8 +47,10 @@ from distributed_model import create_model
 from fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
 from fedavg.fedavg_gradient_trainer import FedAVGGradTrainer
 from freerider.freerider_modeltrainer import FreeriderModelTrainer
-from qualityinference.qualityinference_aggregator import \
-    FedAVGQualityInferenceAggregator
+from inflator.inflator_client_manager import FedAVGInflatorClientManager
+from qualityinference.qualityinference_aggregator import (
+    FedAVGQualityInferenceAggregator,
+)
 from rffl.rffl_aggregator import RFFLAggregator
 from rffl.rffl_clientmanager import RFFLClientManager
 from rffl.rffl_trainer import RFFLTrainer
@@ -139,23 +142,17 @@ if __name__ == "__main__":
     ] = dataset
 
     if args.method == "FedAvg":
-        trainer_class = FedAVGTrainer
-        aggregator_class = FedAVGAggregator
-        model_trainer_class = MyModelTrainerCLS
-        server_manager_class = FedAVGServerManager
-        client_manager_class = FedAVGClientManager
-    elif args.method == "FedAvgGrad":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGGradientAggregator
         model_trainer_class = GradientModelTrainerCLS
-        server_manager_class = FedAVGServerManager
-        client_manager_class = FedAVGClientManager
+        server_manager_class = SecureFedAVGServerManager
+        client_manager_class = FedAVGInflatorClientManager
     elif args.method == "QI":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGQualityInferenceAggregator
         model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
-        client_manager_class = FedAVGClientManager
+        client_manager_class = FedAVGInflatorClientManager
     elif args.method == "RFFL":
         trainer_class = RFFLTrainer
         aggregator_class = RFFLAggregator
@@ -167,7 +164,7 @@ if __name__ == "__main__":
         aggregator_class = FedAVGAutoEncoderAggregator
         model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
-        client_manager_class = FedAVGClientManager
+        client_manager_class = FedAVGInflatorClientManager
 
     # decive adversaries
     adversary_idx = random.sample(
