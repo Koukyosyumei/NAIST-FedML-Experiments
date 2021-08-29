@@ -57,7 +57,14 @@ class RFFLAggregator(FedAVGGradientAggregator):
         self.pred_credibility = np.zeros_like(adversary_flag)
 
         self.rs = torch.zeros(args.client_num_in_total, device=device)
-        self.R_set = list(range(args.client_num_in_total))
+
+        if self.args.ignore_adversary == 0:
+            self.R_set = list(range(args.client_num_in_total))
+        else:
+            self.R_set = list(
+                set(list(range(args.client_num_in_total))) - set(self.adversary_idx)
+            )
+
         self.relative_size = [0] * args.client_num_in_total
         self.threshold = 1 / (10 * args.client_num_in_total)
         self.warm_up = self.args.warm_up
