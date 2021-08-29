@@ -104,8 +104,9 @@ if __name__ == "__main__":
             # project="federated_nas",
             project="fedml",
             name=args.method
+            + "-"
             + str(args.partition_method)
-            + "r"
+            + "-r"
             + str(args.comm_round)
             + "-e"
             + str(args.epochs)
