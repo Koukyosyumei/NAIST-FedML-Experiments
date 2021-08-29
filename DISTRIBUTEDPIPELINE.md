@@ -6,4 +6,4 @@
 
 #### ResNet56
 
-    sh distributed_pipeline.sh "grid_short.q" 10 10 1 1 "./distributed_main.py" "gpu_mapping.yaml" "resnet56" "cifar10" "/work/hideaki-t/dev/FedML/data/cifar10" "hetero" 0.3 20 1 "adam" 64 0.001 0 "FedAvgGrad" 1
+    sh distributed_pipeline.sh "grid_short.q" 10 10 1 1 "./distributed_main.py" "gpu_mapping.yaml" "resnet56" "cifar10" "/work/hideaki-t/dev/FedML/data/cifar10" "hetero" 0.3 20 1 "adam" 64 0.001 0 "FedAvg" 1
