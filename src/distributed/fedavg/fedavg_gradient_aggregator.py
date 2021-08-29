@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+import pickle
 import sys
 import time
 
@@ -43,12 +44,16 @@ class FedAVGGradientAggregator(FedAVGAggregator):
             args,
             model_trainer,
         )
-        self.model_list_history = []
+        self.model_list_history = {c: [] for c in range(args.client_num_in_total)}
+        self.round = 0
 
     def set_global_model_gradients(self, model_gradients, device, weight=1):
         self.trainer.set_model_gradients(model_gradients, device, weight=1)
 
-    def aggregate(self):
+    def anomalydetection(self, sender_id_to_client_index):
+        pass
+
+    def aggregate(self, sender_id_to_client_index):
         start_time = time.time()
         model_list = []
         training_num = 0
@@ -58,6 +63,17 @@ class FedAVGGradientAggregator(FedAVGAggregator):
                 self.model_dict[idx] = transform_list_to_grad(self.model_dict[idx])
             model_list.append((self.sample_num_dict[idx], self.model_dict[idx]))
             training_num += self.sample_num_dict[idx]
+            self.model_list_history[sender_id_to_client_index[idx + 1]].append(
+                (self.sample_num_dict[idx], self.model_dict[idx])
+            )
+
+        self.round += 1
+        if self.round == self.args.comm_round:
+            with open(
+                f"{self.args.output_dir}/model_list_history.pickle", mode="wb"
+            ) as f:
+                logging.info("saving history")
+                pickle.dump(self.model_list_history, f)
 
         logging.info("len of self.model_dict[idx] = " + str(len(self.model_dict)))
 

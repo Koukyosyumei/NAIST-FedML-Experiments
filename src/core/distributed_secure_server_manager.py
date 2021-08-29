@@ -48,7 +48,9 @@ class SecureFedAVGServerManager(FedAVGServerManager):
                     self.sender_id_to_client_index
                 )
             else:
-                global_model_params = self.aggregator.aggregate()
+                global_model_params = self.aggregator.aggregate(
+                    self.sender_id_to_client_index
+                )
 
             logging.info("Start Anomaly Detection")
             self.aggregator.anomalydetection(self.sender_id_to_client_index)
