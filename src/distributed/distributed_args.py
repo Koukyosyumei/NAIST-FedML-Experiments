@@ -204,6 +204,15 @@ def add_args(parser):
         help="strategy of free-riders",
     )
 
+    parser.add_argument("--noise_amp", type=float, default=0.001, help="noise amp")
+
+    parser.add_argument(
+        "--inflator_data_size",
+        type=int,
+        default=30,
+        help="inflator_data_size",
+    )
+
     parser.add_argument(
         "--water_powered_magnification",
         type=float,

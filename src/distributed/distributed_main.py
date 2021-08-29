@@ -129,19 +129,6 @@ if __name__ == "__main__":
         process_id, worker_number, args.gpu_mapping_file, args.gpu_mapping_key
     )
 
-    # load data
-    dataset = load_data(args, args.dataset)
-    [
-        train_data_num,
-        test_data_num,
-        train_data_global,
-        test_data_global,
-        train_data_local_num_dict,
-        train_data_local_dict,
-        test_data_local_dict,
-        class_num,
-    ] = dataset
-
     if args.method == "FedAvg":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGGradientAggregator
@@ -175,12 +162,27 @@ if __name__ == "__main__":
     adversary_flag[adversary_idx] += 1
     logging.info(f"######## adversary_idx = {adversary_idx} ########")
     logging.info(f"######## adversary_flag = {adversary_flag} ########")
-    if process_id - 1 in adversary_idx == 1:
+    if process_id - 1 in adversary_idx:
         logging.info(f"####### process_id = {process_id} is an adversary #######")
         if args.adversary_type == "freerider":
             model_trainer_class = FreeriderModelTrainer
         elif args.adversary_type == "inflator":
             assert args.water_powered_magnification > 1.0
+
+    # load data
+    dataset = load_data(args, args.dataset, adversary_idx=adversary_idx)
+    [
+        train_data_num,
+        test_data_num,
+        train_data_global,
+        test_data_global,
+        train_data_local_num_dict,
+        train_data_local_dict,
+        test_data_local_dict,
+        class_num,
+    ] = dataset
+
+    print("train_data_local_num_dict", train_data_local_num_dict)
 
     # create model.
     # Note if the model is DNN (e.g., ResNet), the training will be very slow.
