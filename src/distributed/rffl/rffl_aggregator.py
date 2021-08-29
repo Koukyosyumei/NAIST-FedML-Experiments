@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import sys
@@ -66,7 +67,7 @@ class RFFLAggregator(FedAVGGradientAggregator):
             )
 
         self.relative_size = [0] * args.client_num_in_total
-        self.threshold = 1 / (10 * args.client_num_in_total)
+        self.threshold = 1 / (3 * args.client_num_in_total)
         self.warm_up = self.args.warm_up
         self.alpha = self.args.alpha
         self.sparcity = self.args.sparcity
@@ -75,12 +76,12 @@ class RFFLAggregator(FedAVGGradientAggregator):
     def _update_reputations(self, client_index, model_list, averaged_gradient):
         # culculate the reputations
         flatten_averaged_gradient = torch.cat(
-            [g.to(self.device).reshape(-1) for g in averaged_gradient]
+            [g.to(self.device).view(-1) for g in averaged_gradient]
         )
         phis = torch.zeros(self.args.client_num_in_total, device=self.device)
         for c_idx, local_gradient in zip(client_index, model_list):
             flatten_local_gradient = torch.cat(
-                [g.to(self.device).reshape(-1) for g in local_gradient[1]]
+                [g.to(self.device).view(-1) for g in local_gradient[1]]
             )
             phis[c_idx] = F.cosine_similarity(
                 flatten_local_gradient, flatten_averaged_gradient, 0, EPS
@@ -113,10 +114,12 @@ class RFFLAggregator(FedAVGGradientAggregator):
             q_ratio = q_ratios[client_idx]
             if self.sparcity == 1:
                 reward_gradients[client_idx] = mask_grad_update_by_order(
-                    averaged_gradient, mask_percentile=q_ratio, mode="layer"
+                    copy.deepcopy(averaged_gradient),
+                    mask_percentile=q_ratio,
+                    mode="layer",
                 )
             else:
-                reward_gradients[client_idx] = averaged_gradient
+                reward_gradients[client_idx] = copy.deepcopy(averaged_gradient)
 
             for grad_idx in range(len(reward_gradients[client_idx])):
                 if self.round_idx == 0:
@@ -135,7 +138,7 @@ class RFFLAggregator(FedAVGGradientAggregator):
 
     def anomalydetection(self, sender_id_to_client_index):
         self.pred_credibility = self.rs.detach().cpu().numpy()
-        auc_crediblity = roc_auc_score(self.adversary_flag, self.pred_credibility)
+        auc_crediblity = roc_auc_score(self.adversary_flag, -self.pred_credibility)
         wandb.log(
             {
                 "Credibility/Adversary-AUC": auc_crediblity,

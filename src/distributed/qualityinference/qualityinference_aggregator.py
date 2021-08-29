@@ -77,9 +77,8 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
             self.pred_credibility[self.prev_client_index] -= 1
         if self.acc_improve_curr < 0:
             self.pred_credibility[client_index] -= 1
-        print("self.pred_credibility is ", self.pred_credibility)
 
-        auc_crediblity = roc_auc_score(self.adversary_flag, self.pred_credibility)
+        auc_crediblity = roc_auc_score(self.adversary_flag, -self.pred_credibility)
         wandb.log(
             {
                 "Credibility/Adversary-AUC": auc_crediblity,
