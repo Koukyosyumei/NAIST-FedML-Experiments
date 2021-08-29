@@ -98,7 +98,9 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --adversary_type ${adversary_type} \\
   --ignore_adversary ${ignore_adversary} \\
   --free_rider_strategy ${free_rider_strategy} \\
+  --noise_amp ${noise_amp} \\
   --water_powered_magnification ${water_powered_magnification} \\
+  --inflator_data_size ${inflator_data_size} \\
   --num_of_augmentation ${num_of_augmentation}
   
 mpirun -np ${np} -npernode ${npernode} ps aux | grep FedAvg" > $script_name
