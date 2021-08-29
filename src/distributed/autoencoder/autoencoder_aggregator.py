@@ -9,7 +9,8 @@ from sklearn.metrics import roc_auc_score
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
-from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
+from distributed.fedavg.fedavg_gradient_aggregator import \
+    FedAVGGradientAggregator
 from standalone.autoencoder.detector import STD_DAGMM
 
 
@@ -67,7 +68,11 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
                 for _, local_gradient in model_list
             ]
         )
-        self.autoencoder.fit(flattend_gradient_locals)
+        self.autoencoder.fit(
+            flattend_gradient_locals,
+            epochs=self.args.autoencoder_epochs,
+            lr=self.args.autoencoder_lr,
+        )
         cred = self.autoencoder.predict(flattend_gradient_locals)
         print("self.adversary_flag", self.adversary_flag)
         print("self.pred_credibility", self.pred_credibility)
