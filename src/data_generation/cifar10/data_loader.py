@@ -1,4 +1,5 @@
 import logging
+import random
 
 import numpy as np
 import torch
@@ -124,7 +125,9 @@ def load_cifar10_data(datadir):
     return (X_train, y_train, X_test, y_test)
 
 
-def partition_data(dataset, datadir, partition, n_nets, alpha):
+def partition_data(
+    dataset, datadir, partition, n_nets, alpha, adversary_idx, inflator_data_size
+):
     logging.info("*********partition data***************")
     X_train, y_train, X_test, y_test = load_cifar10_data(datadir)
     n_train = X_train.shape[0]
@@ -132,9 +135,21 @@ def partition_data(dataset, datadir, partition, n_nets, alpha):
 
     if partition == "homo":
         total_num = n_train
-        idxs = np.random.permutation(total_num)
-        batch_idxs = np.array_split(idxs, n_nets)
-        net_dataidx_map = {i: batch_idxs[i] for i in range(n_nets)}
+        adversary_num = len(adversary_idx)
+
+        batch_idxs = []
+        net_dataidx_map = {i: [] for i in range(n_nets)}
+
+        idxs = list(range(total_num))
+        for aid in adversary_idx:
+            temp_idx = random.sample(idxs, inflator_data_size)
+            net_dataidx_map[aid] = np.array(temp_idx)
+            idxs = list(set(idxs) - set(temp_idx))
+
+        idxs = np.random.permutation(idxs)
+        batch_idxs += np.array_split(idxs, n_nets - adversary_num)
+        for i, nid in enumerate(list(set(list(range(n_nets))) - set(adversary_idx))):
+            net_dataidx_map[nid] = batch_idxs[i]
 
     elif partition == "hetero":
         min_size = 0
@@ -260,6 +275,8 @@ def load_partition_data_distributed_cifar10(
     partition_alpha,
     client_number,
     batch_size,
+    adversary_idx,
+    inflator_data_size
 ):
     (
         X_train,
@@ -269,7 +286,13 @@ def load_partition_data_distributed_cifar10(
         net_dataidx_map,
         traindata_cls_counts,
     ) = partition_data(
-        dataset, data_dir, partition_method, client_number, partition_alpha
+        dataset,
+        data_dir,
+        partition_method,
+        client_number,
+        partition_alpha,
+        adversary_idx,
+        inflator_data_size
     )
     class_num = len(np.unique(y_train))
     logging.info("traindata_cls_counts = " + str(traindata_cls_counts))
@@ -314,7 +337,14 @@ def load_partition_data_distributed_cifar10(
 
 
 def load_partition_data_cifar10(
-    dataset, data_dir, partition_method, partition_alpha, client_number, batch_size
+    dataset,
+    data_dir,
+    partition_method,
+    partition_alpha,
+    client_number,
+    batch_size,
+    adversary_idx,
+    inflator_data_size
 ):
     (
         X_train,
@@ -324,7 +354,13 @@ def load_partition_data_cifar10(
         net_dataidx_map,
         traindata_cls_counts,
     ) = partition_data(
-        dataset, data_dir, partition_method, client_number, partition_alpha
+        dataset,
+        data_dir,
+        partition_method,
+        client_number,
+        partition_alpha,
+        adversary_idx,
+        inflator_data_size
     )
     class_num = len(np.unique(y_train))
     logging.info("traindata_cls_counts = " + str(traindata_cls_counts))
