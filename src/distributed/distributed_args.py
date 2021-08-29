@@ -57,14 +57,6 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--inflator_num",
-        type=int,
-        default=0,
-        metavar="IN",
-        help="number of inflators in a distributed cluster",
-    )
-
-    parser.add_argument(
         "--num_of_augmentation",
         type=int,
         default=0,
@@ -214,6 +206,25 @@ def add_args(parser):
         default=1.0,
         help="water-powered magnification",
     )
+
+    parser.add_argument(
+        "--autoencoder_lr",
+        type=float,
+        default=0.01,
+        help="learning rate for autoencoder",
+    )
+
+    parser.add_argument(
+        "--autoencoder_epochs",
+        type=int,
+        default=1,
+        help="autoencoder_epochs",
+    )
+
+    parser.add_argument("--warm_up", type=int, default=10, help="warm up")
+    parser.add_argument("--alpha", type=float, default=0.95, help="alpha")
+    parser.add_argument("--sparcity", type=int, default=1, help="sparcity")
+    parser.add_argument("--remove", type=int, default=1, help="remove")
 
     args = parser.parse_args()
     return args

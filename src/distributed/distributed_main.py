@@ -175,8 +175,11 @@ if __name__ == "__main__":
     logging.info(f"######## adversary_idx = {adversary_idx} ########")
     logging.info(f"######## adversary_flag = {adversary_flag} ########")
     if process_id - 1 in adversary_idx == 1:
-        logging.info(f"####### process_id = {process_id} is FreeRider #######")
-        model_trainer_class = FreeriderModelTrainer
+        logging.info(f"####### process_id = {process_id} is an adversary #######")
+        if args.adversary_type == "freerider":
+            model_trainer_class = FreeriderModelTrainer
+        elif args.adversary_type == "inflator":
+            assert args.water_powered_magnification > 1.0
 
     # create model.
     # Note if the model is DNN (e.g., ResNet), the training will be very slow.
