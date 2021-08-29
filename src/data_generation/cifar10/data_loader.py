@@ -89,7 +89,7 @@ def _data_transforms_cifar10():
 
     train_transform = transforms.Compose(
         [
-            transforms.ToPILImage(),
+            # transforms.ToPILImage(),
             # transforms.RandomCrop(32, padding=4),
             # transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
@@ -97,7 +97,7 @@ def _data_transforms_cifar10():
         ]
     )
 
-    train_transform.transforms.append(Cutout(16))
+    # train_transform.transforms.append(Cutout(16))
 
     valid_transform = transforms.Compose(
         [
@@ -276,7 +276,7 @@ def load_partition_data_distributed_cifar10(
     client_number,
     batch_size,
     adversary_idx,
-    inflator_data_size
+    inflator_data_size,
 ):
     (
         X_train,
@@ -292,7 +292,7 @@ def load_partition_data_distributed_cifar10(
         client_number,
         partition_alpha,
         adversary_idx,
-        inflator_data_size
+        inflator_data_size,
     )
     class_num = len(np.unique(y_train))
     logging.info("traindata_cls_counts = " + str(traindata_cls_counts))
@@ -344,7 +344,7 @@ def load_partition_data_cifar10(
     client_number,
     batch_size,
     adversary_idx,
-    inflator_data_size
+    inflator_data_size,
 ):
     (
         X_train,
@@ -360,7 +360,7 @@ def load_partition_data_cifar10(
         client_number,
         partition_alpha,
         adversary_idx,
-        inflator_data_size
+        inflator_data_size,
     )
     class_num = len(np.unique(y_train))
     logging.info("traindata_cls_counts = " + str(traindata_cls_counts))
