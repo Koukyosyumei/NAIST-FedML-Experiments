@@ -49,11 +49,9 @@ class RFFLAggregator(FedAVGGradientAggregator):
             args,
             model_trainer,
         )
-        self.model_list_history = []
         self.adversary_flag = adversary_flag
         self.adversary_idx = [i for i, f in enumerate(adversary_flag) if f == 1]
         self.pred_credibility = np.zeros_like(adversary_flag)
-        self.round_idx = 0
 
         self.rs = torch.zeros(args.client_num_in_total, device=device)
         self.R_set = list(range(args.client_num_in_total))
