@@ -8,7 +8,7 @@ def add_args(parser):
         "--model",
         type=str,
         default="mobilenet",
-        metavar="N",
+        metavar="M",
         help="neural network used in training",
     )
 
@@ -16,7 +16,7 @@ def add_args(parser):
         "--dataset",
         type=str,
         default="cifar10",
-        metavar="N",
+        metavar="D",
         help="dataset used for training",
     )
 
@@ -28,7 +28,7 @@ def add_args(parser):
         "--partition_method",
         type=str,
         default="hetero",
-        metavar="N",
+        metavar="P",
         help="how to partition the dataset on local workers",
     )
 
@@ -44,8 +44,16 @@ def add_args(parser):
         "--client_num_in_total",
         type=int,
         default=1000,
-        metavar="NN",
+        metavar="CNT",
         help="number of workers in a distributed cluster",
+    )
+
+    parser.add_argument(
+        "--client_num_per_round",
+        type=int,
+        default=4,
+        metavar="CNP",
+        help="number of workers",
     )
 
     parser.add_argument(
@@ -65,18 +73,10 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--client_num_per_round",
-        type=int,
-        default=4,
-        metavar="NN",
-        help="number of workers",
-    )
-
-    parser.add_argument(
         "--batch_size",
         type=int,
         default=64,
-        metavar="N",
+        metavar="B",
         help="input batch size for training (default: 64)",
     )
 
