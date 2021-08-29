@@ -29,7 +29,9 @@ class FreeriderModelTrainer(GradientModelTrainerCLS):
         if self.prev_model is None or args.free_rider_strategy == "random":
             for current_param in self.model.parameters():
                 fake_gradients.append(
-                    self._generate_random_weight(copy.deepcopy(current_param))
+                    self._generate_random_weight(copy.deepcopy(current_param)).to(
+                        device
+                    )
                 )
         else:
             for prev_param, current_param in zip(
@@ -39,9 +41,9 @@ class FreeriderModelTrainer(GradientModelTrainerCLS):
                     fake_gradients.append(prev_param - current_param)
                 elif args.free_rider_strategy == "advanced-delta":
                     fake_gradients.append(
-                        prev_param
-                        - current_param
-                        + torch.randn_like(prev_param) * args.noise_amp
+                        prev_param.to(device)
+                        - current_param.to(device)
+                        + torch.randn_like(prev_param).to(device) * args.noise_amp
                     )
 
         return fake_gradients
