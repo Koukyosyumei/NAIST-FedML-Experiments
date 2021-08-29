@@ -40,10 +40,8 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
             args,
             model_trainer,
         )
-        self.model_list_history = []
         self.adversary_flag = adversary_flag
         self.pred_credibility = np.zeros_like(adversary_flag)
-        self.round_idx = 0
 
         self.num_parameters = torch.cat(
             [p.reshape(-1) for p in model_trainer.model.parameters()]
@@ -82,5 +80,3 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
                 "round": self.round_idx,
             }
         )
-
-        self.round_idx += 1
