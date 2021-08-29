@@ -6,7 +6,7 @@ import torch
 
 
 def transform_grad_to_list(grad_tensor):
-    return [g.cpu().numpy().tolist() for g in grad_tensor]
+    return [g.detach().cpu().numpy().tolist() for g in grad_tensor]
 
 
 def transform_list_to_grad(grad_list):
