@@ -54,7 +54,7 @@ class RFFLAggregator(FedAVGGradientAggregator):
             self.adversary_idx = [i for i, f in enumerate(adversary_flag) if f == 1]
         else:
             self.adversary_idx = []
-        self.pred_credibility = np.zeros_like(adversary_flag)
+        self.pred_credibility = np.zeros_like(adversary_flag).astype(float)
 
         self.rs = torch.zeros(args.client_num_in_total, device=device)
 

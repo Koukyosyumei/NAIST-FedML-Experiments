@@ -9,8 +9,7 @@ from sklearn.metrics import roc_auc_score
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
-from distributed.fedavg.fedavg_gradient_aggregator import \
-    FedAVGGradientAggregator
+from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
 from standalone.autoencoder.detector import STD_DAGMM
 
 
@@ -42,7 +41,7 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
             model_trainer,
         )
         self.adversary_flag = adversary_flag
-        self.pred_credibility = np.zeros_like(adversary_flag)
+        self.pred_credibility = np.zeros_like(adversary_flag).astype(float)
 
         self.num_parameters = torch.cat(
             [p.reshape(-1) for p in model_trainer.model.parameters()]
@@ -74,10 +73,11 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
             lr=self.args.autoencoder_lr,
         )
         cred = self.autoencoder.predict(flattend_gradient_locals)
+        self.pred_credibility[client_index] = cred.to("cpu").detach().numpy()
         print("self.adversary_flag", self.adversary_flag)
         print("self.pred_credibility", self.pred_credibility)
         print("client_index", client_index)
-        self.pred_credibility[client_index] = cred.to("cpu").detach().numpy()
+
         auc_crediblity = roc_auc_score(self.adversary_flag, self.pred_credibility)
         wandb.log(
             {

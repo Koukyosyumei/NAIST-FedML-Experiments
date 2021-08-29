@@ -39,7 +39,7 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
             model_trainer,
         )
         self.adversary_flag = adversary_flag
-        self.pred_credibility = np.zeros_like(adversary_flag)
+        self.pred_credibility = np.zeros_like(adversary_flag).astype(float)
 
         self.acc_improve_curr = 0
         self.acc_improve_prev = 0
