@@ -6,7 +6,7 @@ gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
 client_num=20
-client_num_per_round=20
+client_num_per_round=10
 worker_num_pernode=1
 
 # py file to be executed
@@ -36,10 +36,10 @@ submit_script=1
 
 ## AutoEncoder (AE) settings
 autoencoder_lr=0.01
-autoencoder_epochs=1
+autoencoder_epochs=5
 
 ## RFFL settings
-warm_up=10
+warm_up=5
 alpha=0.95
 sparcity=1
 remove=1
