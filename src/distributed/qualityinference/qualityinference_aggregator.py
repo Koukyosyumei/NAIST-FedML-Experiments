@@ -38,10 +38,8 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
             args,
             model_trainer,
         )
-        self.model_list_history = []
         self.adversary_flag = adversary_flag
         self.pred_credibility = np.zeros_like(adversary_flag)
-        self.round_idx = 0
 
         self.acc_improve_curr = 0
         self.acc_improve_prev = 0
@@ -89,4 +87,3 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
         )
 
         self.prev_client_index = client_index
-        self.round_idx += 1
