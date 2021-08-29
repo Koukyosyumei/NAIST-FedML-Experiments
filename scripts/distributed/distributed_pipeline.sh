@@ -94,6 +94,10 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --alpha ${alpha} \\
   --sparcity ${sparcity} \\
   --remove ${remove} \\
+  --adversary_num ${adversary_num} \\
+  --adversary_type ${adversary_type} \\
+  --ignore_adversary ${ignore_adversary} \\
+  --free_rider_strategy ${free_rider_strategy} \\
   --water_powered_magnification ${water_powered_magnification} \\
   --num_of_augmentation ${num_of_augmentation}
   

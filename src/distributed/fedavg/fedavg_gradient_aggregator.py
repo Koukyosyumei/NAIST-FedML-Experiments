@@ -5,6 +5,7 @@ import pickle
 import sys
 import time
 
+import numpy as np
 import torch
 import wandb
 from mpi4py import MPI
@@ -46,6 +47,10 @@ class FedAVGGradientAggregator(FedAVGAggregator):
         )
         self.model_list_history = {c: [] for c in range(args.client_num_in_total)}
         self.round_idx = 0
+        if adversary_flag is not None:
+            self.adversary_idx = [i for i, f in enumerate(adversary_flag) if f == 1]
+        else:
+            self.adversary_idx = []
 
     def set_global_model_gradients(self, model_gradients, device, weight=1):
         self.trainer.set_model_gradients(model_gradients, device, weight=1)
@@ -96,6 +101,27 @@ class FedAVGGradientAggregator(FedAVGAggregator):
         end_time = time.time()
         logging.info("aggregate time cost: %d" % (end_time - start_time))
         return averaged_params
+
+    def client_sampling(self, round_idx, client_num_in_total, client_num_per_round):
+        if self.args.ignore_adversary == 0:
+            candidates_idx = list(range(client_num_in_total))
+        else:
+            candidates_idx = list(
+                set(list(range(client_num_in_total))) - set(self.adversary_idx)
+            )
+
+        if client_num_in_total == client_num_per_round:
+            client_indexes = [client_index for client_index in candidates_idx]
+        else:
+            num_clients = min(client_num_per_round, len(candidates_idx))
+            np.random.seed(
+                round_idx
+            )  # make sure for each comparison, we are selecting the same clients each round
+            client_indexes = np.random.choice(
+                candidates_idx, num_clients, replace=False
+            )
+        logging.info("client_indexes = %s" % str(client_indexes))
+        return client_indexes
 
     def test_on_server_for_all_clients(self, round_idx):
         if self.trainer.test_on_the_server(

@@ -187,6 +187,10 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "--ignore_adversary", type=int, default=0, help="ignore (1) or not (0)"
+    )
+
+    parser.add_argument(
         "--adversary_type",
         type=str,
         default="freerider",

@@ -13,8 +13,7 @@ from .rffl_utils import mask_grad_update_by_order
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
-from distributed.fedavg.fedavg_gradient_aggregator import \
-    FedAVGGradientAggregator
+from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
@@ -51,7 +50,10 @@ class RFFLAggregator(FedAVGGradientAggregator):
             model_trainer,
         )
         self.adversary_flag = adversary_flag
-        self.adversary_idx = [i for i, f in enumerate(adversary_flag) if f == 1]
+        if adversary_flag is not None:
+            self.adversary_idx = [i for i, f in enumerate(adversary_flag) if f == 1]
+        else:
+            self.adversary_idx = []
         self.pred_credibility = np.zeros_like(adversary_flag)
 
         self.rs = torch.zeros(args.client_num_in_total, device=device)

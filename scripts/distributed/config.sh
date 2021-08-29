@@ -49,6 +49,7 @@ remove=1
 ######## Adversary settings ########
 adversary_num=2
 adversary_type="freerider"
+ignore_adversary=0
 
 ## Free-Rider settings
 free_rider_strategy="advanced-delta"
