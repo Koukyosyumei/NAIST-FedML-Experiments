@@ -37,7 +37,7 @@ from fedml_api.data_preprocessing.stackoverflow_nwp.data_loader import (
 )
 
 
-def load_data(args, dataset_name):
+def load_data(args, dataset_name, adversary_idx=[]):
     if dataset_name == "mnist":
         logging.info("load_data. dataset_name = %s" % dataset_name)
         (
@@ -248,6 +248,8 @@ def load_data(args, dataset_name):
             args.partition_alpha,
             args.client_num_in_total,
             args.batch_size,
+            adversary_idx,
+            args.inflator_data_size,
         )
     dataset = [
         train_data_num,
