@@ -13,7 +13,8 @@ from .rffl_utils import mask_grad_update_by_order
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
-from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
+from distributed.fedavg.fedavg_gradient_aggregator import \
+    FedAVGGradientAggregator
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
@@ -57,9 +58,10 @@ class RFFLAggregator(FedAVGGradientAggregator):
         self.R_set = list(range(args.client_num_in_total))
         self.relative_size = [0] * args.client_num_in_total
         self.threshold = 1 / (10 * args.client_num_in_total)
-        self.warm_up = 10
-        self.alpha = 0.95
-        self.remove = True
+        self.warm_up = self.args.warm_up
+        self.alpha = self.args.alpha
+        self.sparcity = self.args.sparcity
+        self.remove = self.args.remove
 
     def _update_reputations(self, client_index, model_list, averaged_gradient):
         # culculate the reputations
@@ -82,7 +84,7 @@ class RFFLAggregator(FedAVGGradientAggregator):
     def _remove(self):
         # remove the unuseful cilents
         curr_threshold = self.threshold * (1.0 / len(self.R_set))
-        if self.remove and self.round_idx > self.warm_up:
+        if self.remove == 1 and self.round_idx > self.warm_up:
             for client_idx in self.R_set:
                 if self.rs[client_idx] < curr_threshold:
                     self.rs[client_idx] = 0
@@ -100,9 +102,12 @@ class RFFLAggregator(FedAVGGradientAggregator):
         reward_gradients = {}
         for client_idx in self.R_set:
             q_ratio = q_ratios[client_idx]
-            reward_gradients[client_idx] = mask_grad_update_by_order(
-                averaged_gradient, mask_percentile=q_ratio, mode="layer"
-            )
+            if self.sparcity == 1:
+                reward_gradients[client_idx] = mask_grad_update_by_order(
+                    averaged_gradient, mask_percentile=q_ratio, mode="layer"
+                )
+            else:
+                reward_gradients[client_idx] = averaged_gradient
 
             for grad_idx in range(len(reward_gradients[client_idx])):
                 if self.round_idx == 0:
