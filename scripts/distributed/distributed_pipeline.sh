@@ -95,6 +95,7 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --alpha ${alpha} \\
   --sparcity ${sparcity} \\
   --remove ${remove} \\
+  --k ${k} \\
   --adversary_num ${adversary_num} \\
   --adversary_type ${adversary_type} \\
   --ignore_adversary ${ignore_adversary} \\

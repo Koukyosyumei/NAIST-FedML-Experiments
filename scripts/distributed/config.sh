@@ -46,6 +46,9 @@ gamma=0.5
 sparcity=1
 remove=1
 
+## FoolsGold settings
+k=0.01
+
 ## Quality Inferece (QI) settings
 
 ######## Adversary settings ########

@@ -55,7 +55,7 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
         self.cs = np.zeros((args.client_num_in_total, args.client_num_in_total))
         self.v = np.zeros(args.client_num_in_total)
         self.alpha = np.zeros(args.client_num_in_total)
-        self.k = 0.01
+        self.k = self.args.k
 
     def _update_weight(self, client_index, model_list):
         for c_idx, local_gradient in zip(client_index, model_list):

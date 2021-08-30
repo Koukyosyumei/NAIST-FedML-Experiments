@@ -240,5 +240,9 @@ def add_args(parser):
     parser.add_argument("--sparcity", type=int, default=1, help="sparcity")
     parser.add_argument("--remove", type=int, default=1, help="remove")
 
+    parser.add_argument(
+        "--k", type=float, default=0.01, help="confidience coefficient for FoolsGold"
+    )
+
     args = parser.parse_args()
     return args
