@@ -152,6 +152,30 @@ def partition_data(
             net_dataidx_map[nid] = batch_idxs[i]
 
     elif partition == "hetero":
+        total_num = n_train
+        adversary_num = len(adversary_idx)
+
+        batch_idxs = []
+        net_dataidx_map = {i: [] for i in range(n_nets)}
+
+        idxs = list(range(total_num))
+        for aid in adversary_idx:
+            temp_idx = random.sample(idxs, inflator_data_size)
+            net_dataidx_map[aid] = np.array(temp_idx)
+            idxs = list(set(idxs) - set(temp_idx))
+
+        total_num -= inflator_data_size * adversary_num
+        g = (1 / alpha - 1) / (n_nets - adversary_num - 1)
+        gaps = [int(1 + g * i) for i in range(n_nets - adversary_num)]
+        num_data_list = [int(g * (total_num / sum(gaps))) for g in gaps]
+        num_data_list[-1] += total_num - sum(num_data_list)
+        for i, nid in enumerate(list(set(list(range(n_nets))) - set(adversary_idx))):
+            temp_idx = random.sample(idxs, num_data_list[i])
+            net_dataidx_map[nid] = np.array(temp_idx)
+            idxs = list(set(idxs) - set(temp_idx))
+
+        assert len(idxs) == 0
+        """
         min_size = 0
         K = 10
         N = y_train.shape[0]
@@ -183,6 +207,7 @@ def partition_data(
         for j in range(n_nets):
             np.random.shuffle(idx_batch[j])
             net_dataidx_map[j] = idx_batch[j]
+        """
 
     elif partition == "hetero-fix":
         dataidx_map_file_path = (
