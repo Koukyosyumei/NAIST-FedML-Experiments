@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/"))
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
 from fedml_api.distributed.fedavg.utils import transform_list_to_tensor
 
-EPS = 1e-10
+EPS = 1e-8
 
 
 class RFFLAggregator(FedAVGGradientAggregator):
@@ -89,6 +89,8 @@ class RFFLAggregator(FedAVGGradientAggregator):
             self.rs[c_idx] = (
                 self.alpha * self.rs[c_idx] + (1 - self.alpha) * phis[c_idx]
             )
+        print("phis is ", phis)
+        print("self.rs is ", self.rs)
         self.rs = torch.div(self.rs, self.rs.sum())
 
     def _remove(self):
@@ -173,17 +175,29 @@ class RFFLAggregator(FedAVGGradientAggregator):
         averaged_gradient = [
             torch.zeros(grad.shape).to(self.device) for grad in model_list[0][1]
         ]
-
         for i in range(0, len(model_list)):
             local_sample_number, local_gradient = model_list[i]
+
+            # culculate the norm
+            flatten_local_gradient = torch.cat(
+                [g.to(self.device).view(-1) for g in local_gradient]
+            )
+            norm_value = torch.linalg.norm(flatten_local_gradient) + EPS
+
+            # culculate the weight
             if self.round_idx == 0:
                 w = local_sample_number / training_num
                 self.relative_size[client_index[i]] = w
             else:
                 w = self.rs[client_index[i]]
+
+            # aggregation
             for grad_idx in range(len(averaged_gradient)):
                 averaged_gradient[grad_idx].data += (
-                    local_gradient[grad_idx].data.to(self.device) * w
+                    local_gradient[grad_idx].data.to(self.device)
+                    * w
+                    * self.args.gamma
+                    / norm_value
                 )
 
         self._update_reputations(client_index, model_list, averaged_gradient)
