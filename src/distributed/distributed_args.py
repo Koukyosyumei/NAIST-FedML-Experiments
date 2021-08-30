@@ -133,7 +133,7 @@ def add_args(parser):
     parser.add_argument(
         "--frequency_of_the_test",
         type=int,
-        default=2,
+        default=10,
         help="the frequency of the algorithms",
     )
 
@@ -236,6 +236,7 @@ def add_args(parser):
 
     parser.add_argument("--warm_up", type=int, default=10, help="warm up")
     parser.add_argument("--alpha", type=float, default=0.95, help="alpha")
+    parser.add_argument("--gamma", type=float, default=0.15, help="gamma")
     parser.add_argument("--sparcity", type=int, default=1, help="sparcity")
     parser.add_argument("--remove", type=int, default=1, help="remove")
 

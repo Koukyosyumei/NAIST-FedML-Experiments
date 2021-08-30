@@ -46,6 +46,7 @@ from distributed_dataloader import load_data
 from distributed_model import create_model
 from fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
 from fedavg.fedavg_gradient_trainer import FedAVGGradTrainer
+from foolsgold.foolsgold_api import FoolsGoldAggregator
 from freerider.freerider_modeltrainer import FreeriderModelTrainer
 from inflator.inflator_client_manager import FedAVGInflatorClientManager
 from qualityinference.qualityinference_aggregator import (
@@ -54,6 +55,7 @@ from qualityinference.qualityinference_aggregator import (
 from rffl.rffl_aggregator import RFFLAggregator
 from rffl.rffl_clientmanager import RFFLClientManager
 from rffl.rffl_trainer import RFFLTrainer
+from similarity.similarity_aggregator import FedAVGSimilarityAggregator
 from stdmonitor.std_aggregator import STDFedAVGAggregator
 
 SEED = 42
@@ -153,6 +155,18 @@ if __name__ == "__main__":
         model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = FedAVGInflatorClientManager
+    elif args.method == "FoolsGold":
+        trainer_class = FedAVGGradTrainer
+        aggregator_class = FoolsGoldAggregator
+        model_trainer_class = GradientModelTrainerCLS
+        server_manager_class = SecureFedAVGServerManager
+        client_manager_class = FedAVGInflatorClientManager
+    elif args.method == "SIM":
+        trainer_class = FedAVGGradTrainer
+        aggregator_class = FedAVGSimilarityAggregator
+        model_trainer_class = GradientModelTrainerCLS
+        server_manager_class = SecureFedAVGServerManager
+        client_manager_class = FedAVGInflatorClientManager
 
     # decive adversaries
     adversary_idx = random.sample(
@@ -162,12 +176,15 @@ if __name__ == "__main__":
     adversary_flag[adversary_idx] += 1
     logging.info(f"######## adversary_idx = {adversary_idx} ########")
     logging.info(f"######## adversary_flag = {adversary_flag} ########")
+    water_powered_magnification = 1.0
     if process_id - 1 in adversary_idx:
-        logging.info(f"####### process_id = {process_id} is an adversary #######")
         if args.adversary_type == "freerider":
+            logging.info(f"####### process_id = {process_id} is a freerider #######")
             model_trainer_class = FreeriderModelTrainer
         elif args.adversary_type == "inflator":
-            assert args.water_powered_magnification > 1.0
+            logging.info(f"####### process_id = {process_id} is an inflator #######")
+            water_powered_magnification = args.water_powered_magnification
+            # assert args.water_powered_magnification > 1.0
 
     # load data
     dataset = load_data(args, args.dataset, adversary_idx=adversary_idx)
@@ -218,6 +235,7 @@ if __name__ == "__main__":
             client_initializer,
             model_trainer,
             adversary_flag=adversary_flag,
+            water_powered_magnification=water_powered_magnification,
         )
     except Exception as e:
         logging.info(e)

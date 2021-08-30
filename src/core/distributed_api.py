@@ -35,6 +35,7 @@ def FedML_Distributed_Custom_API(
     client_initializer,
     model_trainer,
     adversary_flag=None,
+    water_powered_magnification=1.0,
     preprocessed_sampling_lists=None,
 ):
     if process_id == 0:
@@ -68,6 +69,7 @@ def FedML_Distributed_Custom_API(
             train_data_local_dict,
             test_data_local_dict,
             model_trainer,
+            water_powered_magnification,
         )
 
 
@@ -157,6 +159,7 @@ class Client_Initializer:
         train_data_local_dict,
         test_data_local_dict,
         model_trainer,
+        water_powered_magnification,
     ):
 
         client_index = process_id - 1
@@ -173,6 +176,6 @@ class Client_Initializer:
             model_trainer,
         )
         client_manager = self.client_manager_class(
-            args, trainer, comm, process_id, size, backend
+            args, trainer, water_powered_magnification, comm, process_id, size, backend
         )
         client_manager.run()
