@@ -12,7 +12,8 @@ from sklearn.metrics import roc_auc_score
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
-from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
+from distributed.fedavg.fedavg_gradient_aggregator import \
+    FedAVGGradientAggregator
 
 EPS = 1e-8
 
@@ -46,6 +47,7 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
         )
         self.adversary_flag = adversary_flag
         self.alpha = self.args.alpha
+        self.k = self.args.k
 
         self.pred_credibility = np.zeros_like(adversary_flag).astype(float)
         self.rs = torch.zeros(args.client_num_in_total, device=device)
@@ -55,7 +57,6 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
         self.cs = np.zeros((args.client_num_in_total, args.client_num_in_total))
         self.v = np.zeros(args.client_num_in_total)
         self.alpha = np.zeros(args.client_num_in_total)
-        self.k = self.args.k
 
     def _update_weight(self, client_index, model_list):
         for c_idx, local_gradient in zip(client_index, model_list):
