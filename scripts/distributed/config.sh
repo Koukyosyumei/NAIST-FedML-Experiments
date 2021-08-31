@@ -6,7 +6,7 @@ gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
 client_num=20
-client_num_per_round=20
+client_num_per_round=10
 worker_num_pernode=1
 
 # py file to be executed
@@ -14,8 +14,8 @@ py_file="./distributed_main.py"
 
 # model and optimier setting
 model="resnet56"
-comm_round=5
-epochs=2
+comm_round=100
+epochs=5
 client_optimizer="adam"
 lr=0.001
 clip_grad=0
@@ -24,12 +24,12 @@ max_norm=5
 # dataset setting
 dataset="cifar10"
 data_dir="/work/hideaki-t/dev/FedML/data/cifar10"
-partition_method="hetero"
+partition_method="homo"
 partition_alpha=0.1
 batch_size=20
 
 # other settings
-frequency_of_the_test=1
+frequency_of_the_test=5
 ci=0
 submit_script=1
 
@@ -61,6 +61,6 @@ free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=1
-inflator_data_size=30
+water_powered_magnification=100
+inflator_data_size=25
 num_of_augmentation=0

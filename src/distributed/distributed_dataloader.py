@@ -250,6 +250,7 @@ def load_data(args, dataset_name, adversary_idx=[]):
             args.batch_size,
             adversary_idx,
             args.inflator_data_size,
+            water_powered_magnification=args.water_powered_magnification,
         )
     dataset = [
         train_data_num,

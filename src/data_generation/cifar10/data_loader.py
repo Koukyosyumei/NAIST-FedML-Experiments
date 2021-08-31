@@ -126,7 +126,14 @@ def load_cifar10_data(datadir):
 
 
 def partition_data(
-    dataset, datadir, partition, n_nets, alpha, adversary_idx, inflator_data_size
+    dataset,
+    datadir,
+    partition,
+    n_nets,
+    alpha,
+    adversary_idx,
+    inflator_data_size,
+    water_powered_magnification=1,
 ):
     logging.info("*********partition data***************")
     X_train, y_train, X_test, y_test = load_cifar10_data(datadir)
@@ -134,13 +141,17 @@ def partition_data(
     # n_test = X_test.shape[0]
 
     if partition == "homo":
-        total_num = n_train
         adversary_num = len(adversary_idx)
+        total_num = int(
+            n_train
+            - inflator_data_size * (water_powered_magnification - 1) * adversary_num
+        )
+        logging.info(f"*********total num = {total_num}***************")
 
         batch_idxs = []
         net_dataidx_map = {i: [] for i in range(n_nets)}
 
-        idxs = list(range(total_num))
+        idxs = random.sample(list(range(n_train)), total_num)
         for aid in adversary_idx:
             temp_idx = random.sample(idxs, inflator_data_size)
             net_dataidx_map[aid] = np.array(temp_idx)
@@ -152,13 +163,17 @@ def partition_data(
             net_dataidx_map[nid] = batch_idxs[i]
 
     elif partition == "hetero":
-        total_num = n_train
         adversary_num = len(adversary_idx)
+        total_num = int(
+            n_train
+            - inflator_data_size * (water_powered_magnification - 1) * adversary_num
+        )
+        logging.info(f"*********total num = {total_num}***************")
 
         batch_idxs = []
         net_dataidx_map = {i: [] for i in range(n_nets)}
 
-        idxs = list(range(total_num))
+        idxs = random.sample(list(range(n_train)), total_num)
         for aid in adversary_idx:
             temp_idx = random.sample(idxs, inflator_data_size)
             net_dataidx_map[aid] = np.array(temp_idx)
@@ -175,6 +190,7 @@ def partition_data(
             idxs = list(set(idxs) - set(temp_idx))
 
         assert len(idxs) == 0
+
         """
         min_size = 0
         K = 10
@@ -302,6 +318,7 @@ def load_partition_data_distributed_cifar10(
     batch_size,
     adversary_idx,
     inflator_data_size,
+    water_powered_magnification=1,
 ):
     (
         X_train,
@@ -318,6 +335,7 @@ def load_partition_data_distributed_cifar10(
         partition_alpha,
         adversary_idx,
         inflator_data_size,
+        water_powered_magnification=water_powered_magnification,
     )
     class_num = len(np.unique(y_train))
     logging.info("traindata_cls_counts = " + str(traindata_cls_counts))
@@ -370,6 +388,7 @@ def load_partition_data_cifar10(
     batch_size,
     adversary_idx,
     inflator_data_size,
+    water_powered_magnification=1,
 ):
     (
         X_train,
@@ -386,6 +405,7 @@ def load_partition_data_cifar10(
         partition_alpha,
         adversary_idx,
         inflator_data_size,
+        water_powered_magnification=water_powered_magnification,
     )
     class_num = len(np.unique(y_train))
     logging.info("traindata_cls_counts = " + str(traindata_cls_counts))
