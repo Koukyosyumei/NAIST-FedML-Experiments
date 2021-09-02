@@ -174,11 +174,20 @@ def partition_data(
         net_dataidx_map = {i: [] for i in range(n_nets)}
 
         idxs = random.sample(list(range(n_train)), total_num)
-        for aid in adversary_idx:
-            temp_idx = random.sample(idxs, inflator_data_size)
+
+        # distribute data to adversaries
+        total_num_adversary = adversary_num * inflator_data_size
+        g = (1 / alpha - 1) / (adversary_num - 1)
+        gaps = [int(1 + g * i) for i in range(adversary_num)]
+        num_data_list = [int(g * (total_num_adversary / sum(gaps))) for g in gaps]
+        if len(num_data_list) > 0:
+            num_data_list[-1] += total_num_adversary - sum(num_data_list)
+        for i, aid in enumerate(adversary_idx):
+            temp_idx = random.sample(idxs, num_data_list[i])
             net_dataidx_map[aid] = np.array(temp_idx)
             idxs = list(set(idxs) - set(temp_idx))
 
+        # distribtue data to honest clients
         total_num -= inflator_data_size * adversary_num
         g = (1 / alpha - 1) / (n_nets - adversary_num - 1)
         gaps = [int(1 + g * i) for i in range(n_nets - adversary_num)]
