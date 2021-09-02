@@ -12,8 +12,7 @@ from sklearn.metrics import roc_auc_score
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
-from distributed.fedavg.fedavg_gradient_aggregator import \
-    FedAVGGradientAggregator
+from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
 
 EPS = 1e-8
 
@@ -89,7 +88,10 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
                     continue
                 if self.v[j_idx] > self.v[i_idx]:
                     self.cs[i_idx][j_idx] *= self.v[i_idx] / self.v[j_idx]
-        # self.alpha = 1 - np.max(self.cs, axis=1)
+
+        if self.args.inv == 0:
+            self.alpha = 1 - np.max(self.cs, axis=1)
+
         self.alpha = np.max(self.cs, axis=1)
 
         # rescale

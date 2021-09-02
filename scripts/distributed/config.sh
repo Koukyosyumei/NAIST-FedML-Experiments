@@ -6,7 +6,7 @@ gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
 client_num=20
-client_num_per_round=10
+client_num_per_round=20
 worker_num_pernode=1
 
 # py file to be executed
@@ -14,7 +14,7 @@ py_file="./distributed_main.py"
 
 # model and optimier setting
 model="resnet56"
-comm_round=100
+comm_round=105
 epochs=5
 client_optimizer="adam"
 lr=0.001
@@ -48,6 +48,7 @@ remove=1
 
 ## FoolsGold settings
 k=0.01
+inv=1
 
 ## Quality Inferece (QI) settings
 
@@ -61,6 +62,6 @@ free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=100
-inflator_data_size=25
+water_powered_magnification=2
+inflator_data_size=1250
 num_of_augmentation=0

@@ -5,25 +5,7 @@ source ./config.sh
 
 # check the arguments
 
-echo "node_type=${node_type}"
-echo "client_num=${client_num}"
-echo "client_num_per_round=${client_num_per_round}"
-echo "worker_num_pernode=${worker_num_pernode}"
-echo "npernode=${npernode}"
-echo "py_file=${py_file}"
-echo "gpu_mapping_yaml=${gpu_mapping_yaml}"
-echo "model=${model}"
-echo "dataset=${dataset}"
-echo "data_dir=${data_dir}"
-echo "partition_method=${partition_method}"
-echo "comm_round=${comm_round}"
-echo "epochs=${epochs}"
-echo "client_optimizer=${client_optimizer}"
-echo "batch_size=${batch_size}"
-echo "lr=${lr}"
-echo "ci=${ci}"
-echo "method=${method}"
-echo "submit_script=${submit_script}"
+cat ./config.sh
 
 # preparation
 
@@ -96,6 +78,7 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --sparcity ${sparcity} \\
   --remove ${remove} \\
   --k ${k} \\
+  --inv ${inv} \\
   --adversary_num ${adversary_num} \\
   --adversary_type ${adversary_type} \\
   --ignore_adversary ${ignore_adversary} \\
