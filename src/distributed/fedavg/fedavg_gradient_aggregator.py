@@ -200,4 +200,5 @@ class FedAVGGradientAggregator(FedAVGAggregator):
 
         if round_idx == self.args.comm_round - 1:
             logging.info("__finish aggregation")
+            time.sleep(3)
             MPI.COMM_WORLD.Abort()
