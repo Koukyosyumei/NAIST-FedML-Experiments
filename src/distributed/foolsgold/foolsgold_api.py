@@ -91,8 +91,8 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
 
         if self.args.inv == 0:
             self.alpha = 1 - np.max(self.cs, axis=1)
-
-        self.alpha = np.max(self.cs, axis=1)
+        else:
+            self.alpha = np.max(self.cs, axis=1)
 
         # rescale
         self.alpha = self.alpha / (np.max(self.alpha) + EPS)
