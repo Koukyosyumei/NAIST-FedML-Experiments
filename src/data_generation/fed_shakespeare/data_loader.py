@@ -16,7 +16,7 @@ client_ids_train = None
 client_ids_test = None
 DEFAULT_TRAIN_CLIENTS_NUM = 715
 DEFAULT_TEST_CLIENTS_NUM = 715
-DEFAULT_BATCH_SIZE = 4
+DEFAULT_BATCH_SIZE = 10
 DEFAULT_TRAIN_FILE = "shakespeare_train.h5"
 DEFAULT_TEST_FILE = "shakespeare_test.h5"
 
