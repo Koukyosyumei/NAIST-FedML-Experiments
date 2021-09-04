@@ -4,6 +4,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from data_generation.cifar10.data_loader import load_partition_data_cifar10
+from data_generation.fed_shakespeare.data_loader import (
+    load_partition_data_federated_shakespeare,
+)
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.data_preprocessing.cifar100.data_loader import (
@@ -12,9 +15,6 @@ from fedml_api.data_preprocessing.cifar100.data_loader import (
 from fedml_api.data_preprocessing.cinic10.data_loader import load_partition_data_cinic10
 from fedml_api.data_preprocessing.fed_cifar100.data_loader import (
     load_partition_data_federated_cifar100,
-)
-from fedml_api.data_preprocessing.fed_shakespeare.data_loader import (
-    load_partition_data_federated_shakespeare,
 )
 from fedml_api.data_preprocessing.FederatedEMNIST.data_loader import (
     load_partition_data_federated_emnist,
@@ -103,8 +103,10 @@ def load_data(args, dataset_name, adversary_idx=[]):
             train_data_local_dict,
             test_data_local_dict,
             class_num,
-        ) = load_partition_data_federated_shakespeare(args.dataset, args.data_dir)
-        args.client_num_in_total = client_num
+        ) = load_partition_data_federated_shakespeare(
+            args.dataset, args.data_dir, args.client_num_in_total
+        )
+        # args.client_num_in_total = client_num
 
     elif dataset_name == "fed_cifar100":
         logging.info("load_data. dataset_name = %s" % dataset_name)

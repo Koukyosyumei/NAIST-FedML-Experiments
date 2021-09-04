@@ -38,7 +38,7 @@ from core.distributed_api import (
     Server_Initializer,
 )
 from core.distributed_secure_server_manager import SecureFedAVGServerManager
-from core.gradient_trainer import GradientModelTrainerCLS
+from core.gradient_trainer import GradientModelTrainerCLS, GradientModelTrainerNWP
 
 from autoencoder.autoencoder_aggregator import FedAVGAutoEncoderAggregator
 from distributed_args import add_args
@@ -131,40 +131,39 @@ if __name__ == "__main__":
         process_id, worker_number, args.gpu_mapping_file, args.gpu_mapping_key
     )
 
+    if args.dataset == "fed_shakespeare":
+        model_trainer_class = GradientModelTrainerNWP
+    else:
+        model_trainer_class = GradientModelTrainerCLS
+
     if args.method == "FedAvg":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGGradientAggregator
-        model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = FedAVGInflatorClientManager
     elif args.method == "QI":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGQualityInferenceAggregator
-        model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = FedAVGInflatorClientManager
     elif args.method == "RFFL":
         trainer_class = RFFLTrainer
         aggregator_class = RFFLAggregator
-        model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = RFFLClientManager
     elif args.method == "AE":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGAutoEncoderAggregator
-        model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = FedAVGInflatorClientManager
     elif args.method == "FoolsGold":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FoolsGoldAggregator
-        model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = FedAVGInflatorClientManager
     elif args.method == "SIM":
         trainer_class = FedAVGGradTrainer
         aggregator_class = FedAVGSimilarityAggregator
-        model_trainer_class = GradientModelTrainerCLS
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = FedAVGInflatorClientManager
 
