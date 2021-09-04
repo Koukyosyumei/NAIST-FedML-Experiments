@@ -15,11 +15,11 @@ py_file="./distributed_main.py"
 # model and optimier setting
 model="rnn"
 comm_round=105
-epochs=5
-client_optimizer="adam"
-lr=0.001
+epochs=1
+client_optimizer="sgd"
+lr=1.47
 clip_grad=0
-max_norm=5
+max_norm=1
 
 # dataset setting
 dataset="fed_shakespeare"
