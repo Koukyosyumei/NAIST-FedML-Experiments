@@ -10,9 +10,10 @@ from fedml_api.model.cv.mobilenet_v3 import MobileNetV3
 from fedml_api.model.cv.resnet import resnet56
 from fedml_api.model.cv.resnet_gn import resnet18
 from fedml_api.model.linear.lr import LogisticRegression
-from fedml_api.model.nlp.rnn import RNN_OriginalFedAvg, RNN_StackOverFlow
+from fedml_api.model.nlp.rnn import RNN_StackOverFlow
 
 from custom_models.alexnet import AlexNet
+from custom_models.rnn import RNN_OriginalFedAvg
 
 
 def create_model(args, model_name, output_dim):

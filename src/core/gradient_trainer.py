@@ -132,7 +132,7 @@ class GradientModelTrainerNWP(GradientModelTrainerCLS):
                 x, labels = x.to(device), labels.to(device)
                 model.zero_grad()
                 log_probs = model(x)
-                loss = criterion(log_probs, labels[:, -1].to(int))
+                loss = criterion(log_probs, labels.to(int))
                 loss.backward()
 
                 if args.clip_grad == 1:
@@ -168,11 +168,11 @@ class GradientModelTrainerNWP(GradientModelTrainerCLS):
                 x = x.to(device)
                 target = target.to(device)
                 pred = model(x)
-                loss = criterion(pred, target[:, -1].to(int))
+                loss = criterion(pred, target.to(int))
 
-                _, predicted = torch.max(pred, -1)
-                target_pos = ~(target[:, -1].to(int) == 0)
-                correct = predicted.eq(target[:, -1].to(int)).sum()
+                _, predicted = torch.max(pred, 1)
+                target_pos = ~(target == 0)
+                correct = (predicted.eq(target) * target_pos).sum()
 
                 metrics["test_correct"] += correct.item()
                 metrics["test_loss"] += loss.item() * target.size(0)
