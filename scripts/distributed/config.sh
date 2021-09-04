@@ -13,7 +13,7 @@ worker_num_pernode=1
 py_file="./distributed_main.py"
 
 # model and optimier setting
-model="resnet56"
+model="rnn"
 comm_round=105
 epochs=5
 client_optimizer="adam"
@@ -22,11 +22,11 @@ clip_grad=0
 max_norm=5
 
 # dataset setting
-dataset="cifar10"
-data_dir="/work/hideaki-t/dev/FedML/data/cifar10"
-partition_method="homo"
+dataset="fed_shakespeare"
+data_dir="/work/hideaki-t/dev/FedML/data/fed_shakespeare/datasets"
+partition_method="hetero"
 partition_alpha=0.1
-batch_size=20
+batch_size=4
 
 # other settings
 frequency_of_the_test=5
@@ -48,12 +48,12 @@ remove=1
 
 ## FoolsGold settings
 k=0.01
-inv=1
+inv=0
 
 ## Quality Inferece (QI) settings
 
 ######## Adversary settings ########
-adversary_num=4
+adversary_num=0
 adversary_type="inflator"
 ignore_adversary=0
 
