@@ -12,8 +12,7 @@ from .utils import compute_grad_update
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 
-from fedml_api.standalone.fedavg.my_model_trainer_classification import \
-    MyModelTrainer
+from fedml_api.standalone.fedavg.my_model_trainer_classification import MyModelTrainer
 
 
 class GradientModelTrainerCLS(MyModelTrainer):
@@ -100,4 +99,82 @@ class GradientModelTrainerCLS(MyModelTrainer):
                 metrics["test_correct"] += correct.item()
                 metrics["test_loss"] += loss.item() * target.size(0)
                 metrics["test_total"] += target.size(0)
+        return metrics
+
+
+class GradientModelTrainerNWP(GradientModelTrainerCLS):
+    def train(self, train_data, device, args):
+        model = self.model
+
+        model.to(device)
+        model.train()
+
+        # train and update
+        criterion = nn.CrossEntropyLoss(ignore_index=0).to(device)
+        if args.client_optimizer == "sgd":
+            optimizer = torch.optim.SGD(
+                filter(lambda p: p.requires_grad, self.model.parameters()), lr=args.lr
+            )
+        else:
+            optimizer = torch.optim.Adam(
+                filter(lambda p: p.requires_grad, self.model.parameters()),
+                lr=args.lr,
+                weight_decay=args.wd,
+                amsgrad=True,
+            )
+
+        epoch_loss = []
+        backup = copy.deepcopy(model)
+
+        for epoch in range(args.epochs):
+            batch_loss = []
+            for batch_idx, (x, labels) in enumerate(train_data):
+                x, labels = x.to(device), labels.to(device)
+                model.zero_grad()
+                log_probs = model(x)
+                loss = criterion(log_probs, labels[:, -1].to(int))
+                loss.backward()
+
+                if args.clip_grad == 1:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_norm)
+
+                optimizer.step()
+                # logging.info('Update Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                #     epoch, (batch_idx + 1) * args.batch_size, len(train_data) * args.batch_size,
+                #            100. * (batch_idx + 1) / len(train_data), loss.item()))
+                batch_loss.append(loss.item())
+
+            epoch_loss.append(sum(batch_loss) / len(batch_loss))
+            logging.info(
+                "Client Index = {}\tEpoch: {}\tLoss: {:.6f}".format(
+                    self.id, epoch, sum(epoch_loss) / len(epoch_loss)
+                )
+            )
+
+        grads = compute_grad_update(old_model=backup, new_model=model)
+        return grads
+
+    def test(self, test_data, device, args):
+        model = self.model
+
+        model.to(device)
+
+        metrics = {"test_correct": 0, "test_loss": 0, "test_total": 0}
+
+        criterion = nn.CrossEntropyLoss(ignore_index=0).to(device)
+
+        with torch.no_grad():
+            for batch_idx, (x, target) in enumerate(test_data):
+                x = x.to(device)
+                target = target.to(device)
+                pred = model(x)
+                loss = criterion(pred, target[:, -1].to(int))
+
+                _, predicted = torch.max(pred, -1)
+                target_pos = ~(target[:, -1].to(int) == 0)
+                correct = predicted.eq(target[:, -1].to(int)).sum()
+
+                metrics["test_correct"] += correct.item()
+                metrics["test_loss"] += loss.item() * target.size(0)
+                metrics["test_total"] += target_pos.sum().item()
         return metrics
