@@ -183,7 +183,7 @@ if __name__ == "__main__":
         elif args.adversary_type == "inflator":
             logging.info(f"####### process_id = {process_id} is an inflator #######")
             water_powered_magnification = args.water_powered_magnification
-            # assert args.water_powered_magnification > 1.0
+            args.batch_size = args.inflator_batch_size
 
     # load data
     dataset = load_data(args, args.dataset, adversary_idx=adversary_idx)

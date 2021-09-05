@@ -13,20 +13,20 @@ worker_num_pernode=1
 py_file="./distributed_main.py"
 
 # model and optimier setting
-model="rnn"
+model="resnet56"
 comm_round=105
-epochs=1
-client_optimizer="sgd"
-lr=1.47
+epochs=5
+client_optimizer="adam"
+lr=0.001
 clip_grad=0
 max_norm=1
 
 # dataset setting
-dataset="fed_shakespeare"
-data_dir="/work/hideaki-t/dev/FedML/data/fed_shakespeare/datasets"
-partition_method="hetero"
+dataset="cifar10"
+data_dir="/work/hideaki-t/dev/FedML/data/cifar10"
+partition_method="homo"
 partition_alpha=0.1
-batch_size=4
+batch_size=20
 
 # other settings
 frequency_of_the_test=5
@@ -38,6 +38,7 @@ submit_script=1
 ## AutoEncoder (AE) settings
 autoencoder_lr=0.01
 autoencoder_epochs=5
+autoencoder_type="STD-NUM-DAGMM"
 
 ## RFFL settings
 warm_up=5
@@ -48,12 +49,12 @@ remove=1
 
 ## FoolsGold settings
 k=0.01
-inv=0
+inv=1
 
 ## Quality Inferece (QI) settings
 
 ######## Adversary settings ########
-adversary_num=0
+adversary_num=4
 adversary_type="inflator"
 ignore_adversary=0
 
@@ -64,4 +65,5 @@ noise_amp=0.001
 ## Inflator settings
 water_powered_magnification=2
 inflator_data_size=1250
+inflator_batch_size=20
 num_of_augmentation=0

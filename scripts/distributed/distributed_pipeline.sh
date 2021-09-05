@@ -73,6 +73,7 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --output_dir ${output_dir} \\
   --autoencoder_lr ${autoencoder_lr} \\
   --autoencoder_epochs ${autoencoder_epochs} \\
+  --autoencoder_type ${autoencoder_type} \\
   --warm_up ${warm_up} \\
   --alpha ${alpha} \\
   --sparcity ${sparcity} \\
@@ -86,6 +87,7 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --noise_amp ${noise_amp} \\
   --water_powered_magnification ${water_powered_magnification} \\
   --inflator_data_size ${inflator_data_size} \\
+  --inflator_batch_size ${inflator_batch_size} \\
   --num_of_augmentation ${num_of_augmentation} \\
   --frequency_of_the_test ${frequency_of_the_test}
   

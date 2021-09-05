@@ -214,6 +214,13 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "--inflator_batch_size",
+        type=int,
+        default=20,
+        help="inflator_batch_size",
+    )
+
+    parser.add_argument(
         "--water_powered_magnification",
         type=float,
         default=1.0,
@@ -232,6 +239,13 @@ def add_args(parser):
         type=int,
         default=1,
         help="autoencoder_epochs",
+    )
+
+    parser.add_argument(
+        "--autoencoder_type",
+        type=str,
+        default="STD-DAGMM",
+        help="type of autoencoder",
     )
 
     parser.add_argument("--warm_up", type=int, default=10, help="warm up")
