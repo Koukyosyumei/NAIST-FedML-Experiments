@@ -10,7 +10,7 @@ from sklearn.metrics import roc_auc_score
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../")))
 from core.utils import transform_list_to_grad
 from distributed.fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
-from standalone.autoencoder.detector import STD_DAGMM
+from standalone.autoencoder.detector import STD_DAGMM, STD_NUM_DAGMM
 
 
 class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
@@ -46,7 +46,11 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
         self.num_parameters = torch.cat(
             [p.reshape(-1) for p in model_trainer.model.parameters()]
         ).shape[-1]
-        self.autoencoder = STD_DAGMM(self.num_parameters, device)
+
+        if self.args.autoencoder_type == "STD-DAGMM":
+            self.autoencoder = STD_DAGMM(self.num_parameters, device)
+        elif self.args.autoencoder_type == "STD-NUM-DAGMM":
+            self.autoencoder = STD_NUM_DAGMM(self.num_parameters, device)
 
     def anomalydetection(self, sender_id_to_client_index):
         model_list = []
@@ -67,12 +71,30 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
                 for _, local_gradient in model_list
             ]
         )
-        self.autoencoder.fit(
-            flattend_gradient_locals,
-            epochs=self.args.autoencoder_epochs,
-            lr=self.args.autoencoder_lr,
+        local_num_tensor = (
+            torch.Tensor([num for num, _ in model_list]).to(self.device).float()
         )
-        cred = self.autoencoder.predict(flattend_gradient_locals)
+        normalized_local_num_tensor = local_num_tensor / local_num_tensor.sum()
+
+        if self.args.autoencoder_type == "STD-DAGMM":
+            self.autoencoder.fit(
+                flattend_gradient_locals,
+                epochs=self.args.autoencoder_epochs,
+                lr=self.args.autoencoder_lr,
+            )
+            cred = self.autoencoder.predict(flattend_gradient_locals)
+
+        elif self.args.autoencoder_type == "STD-NUM-DAGMM":
+            self.autoencoder.fit(
+                flattend_gradient_locals,
+                normalized_local_num_tensor,
+                epochs=self.args.autoencoder_epochs,
+                lr=self.args.autoencoder_lr,
+            )
+            cred = self.autoencoder.predict(
+                flattend_gradient_locals, normalized_local_num_tensor
+            )
+
         self.pred_credibility[client_index] = cred.to("cpu").detach().numpy()
         print("self.adversary_flag", self.adversary_flag)
         print("self.pred_credibility", self.pred_credibility)

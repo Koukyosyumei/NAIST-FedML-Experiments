@@ -193,3 +193,57 @@ class STD_DAGMM(nn.Module):
             optimizer.step()
 
             logging.info(f"STD-DAGMM: epoch {i} - {loss.item()}")
+
+
+class STD_NUM_DAGMM(STD_DAGMM):
+    def __init__(self, in_len, device, n_gmm=2, latent_dim=5):
+        super().__init__(in_len, device, n_gmm=n_gmm, latent_dim=latent_dim)
+
+    def forward(self, x, local_data_num):
+        enc = self.encode(x)
+        dec = self.decode(enc)
+        rec_cosine = F.cosine_similarity(
+            x.view(x.shape[0], -1), dec.view(dec.shape[0], -1), dim=1
+        )
+        rec_euclidean = self.relative_euclidean_distance(
+            x.view(x.shape[0], -1), dec.view(dec.shape[0], -1), dim=1
+        )
+        rec_std = torch.std(x.view(x.shape[0], -1), dim=1)
+        rec_local_data_num = local_data_num
+        print("local num shape is ", rec_local_data_num.shape)
+        print("rec_std shape is ", rec_std.shape)
+        z = torch.cat(
+            [
+                enc,
+                rec_euclidean.unsqueeze(-1),
+                rec_cosine.unsqueeze(-1),
+                rec_std.unsqueeze(-1),
+                rec_local_data_num.unsqueeze(-1),
+            ],
+            dim=1,
+        )
+        gamma = self.estimate(z)
+        return enc, dec, z, gamma
+
+    def fit(self, x, local_data_num, epochs=1, lr=0.01):
+        optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=0.0001)
+        for i in range(epochs):
+            self.train()
+            enc, dec, z, gamma = self(x, local_data_num)
+            loss, sample_energy, recon_error, cov_diag = self.loss_function(
+                x, dec, z, gamma, 0.1, 0.005
+            )
+            optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.parameters(), 5)
+            optimizer.step()
+
+            logging.info(f"STD-DAGMM: epoch {i} - {loss.item()}")
+
+    def predict(self, X, local_data_num):
+        E = torch.tensor([], device=self.device)
+        for x, num in zip(X, local_data_num):
+            _, _, z, _ = self(x.unsqueeze(0), num.unsqueeze(0))
+            e, _ = self.compute_energy(z, size_average=False)
+            E = torch.cat((E, e))
+        return E
