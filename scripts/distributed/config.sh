@@ -1,13 +1,13 @@
 ######## General settings ########
 # cluster setting
 node_type="grid_short.q"
-npernode=1
+gpupernode=1
 gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
-client_num=20
-client_num_per_round=20
-worker_num_pernode=1
+client_num=50
+client_num_per_round=50
+worker_num_pernode=2
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -50,7 +50,7 @@ remove=1
 ## FoolsGold settings
 k=0.01
 inv=0
-indicative_features="last"
+indicative_features="all"
 
 ## Quality Inferece (QI) settings
 

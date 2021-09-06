@@ -31,7 +31,7 @@ def add_args(parser):
         help="the number of clients per node",
     )
     parser.add_argument(
-        "--npernode",
+        "--gpupernode",
         type=int,
         default=2,
         metavar="NPN",
@@ -41,22 +41,22 @@ def add_args(parser):
     return parser
 
 
-def create_dict(client_num_per_round, worker_num_pernode, npernode, dict_key):
-    worker_num = (client_num_per_round + 1) // (worker_num_pernode * npernode)
+def create_dict(client_num_per_round, worker_num_pernode, gpupernode, dict_key):
+    worker_num = (client_num_per_round + 1) // (worker_num_pernode * gpupernode)
     worker_num = (
         worker_num + 1
-        if (client_num_per_round + 1) % (worker_num_pernode * npernode) != 0
+        if (client_num_per_round + 1) % (worker_num_pernode * gpupernode) != 0
         else worker_num
     )
 
     mapping_dict = {}
     remaining = client_num_per_round + 1
     for worker_id in range(worker_num):
-        if remaining >= worker_num_pernode * npernode:
-            mapping_dict[f"gpu-worker{worker_id}"] = [worker_num_pernode] * npernode
-            remaining -= worker_num_pernode * npernode
+        if remaining >= worker_num_pernode * gpupernode:
+            mapping_dict[f"gpu-worker{worker_id}"] = [worker_num_pernode] * gpupernode
+            remaining -= worker_num_pernode * gpupernode
         else:
-            temp_list = [0] * npernode
+            temp_list = [0] * gpupernode
             num_used_node = remaining // worker_num_pernode
             for i in range(num_used_node):
                 temp_list[i] = worker_num_pernode
@@ -87,12 +87,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with open(args.yaml_path, "r") as yamlfile:
         cur_yaml = yaml.safe_load(yamlfile)
-        dict_key = f"mapping_config_client_num_per_round_{args.client_num_per_round}_worker_num_pernode_{args.worker_num_pernode}_npernode_{args.npernode}"
+        dict_key = f"mapping_config_client_num_per_round_{args.client_num_per_round}_worker_num_pernode_{args.worker_num_pernode}_gpupernode_{args.gpupernode}"
         if dict_key not in cur_yaml:
             mapping_dict = create_dict(
                 args.client_num_per_round,
                 args.worker_num_pernode,
-                args.npernode,
+                args.gpupernode,
                 dict_key,
             )
             sdump = "" + yaml.dump(
