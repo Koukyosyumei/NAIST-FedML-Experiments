@@ -24,7 +24,7 @@ max_norm=1
 # dataset setting
 dataset="cifar10"
 data_dir="/work/hideaki-t/dev/FedML/data/cifar10"
-partition_method="homo"
+partition_method="hetero"
 partition_alpha=0.1
 batch_size=20
 
@@ -49,7 +49,8 @@ remove=1
 
 ## FoolsGold settings
 k=0.01
-inv=1
+inv=0
+indicative_features="last"
 
 ## Quality Inferece (QI) settings
 

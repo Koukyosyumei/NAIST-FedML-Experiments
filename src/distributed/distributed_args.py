@@ -258,6 +258,12 @@ def add_args(parser):
         "--k", type=float, default=0.01, help="confidience coefficient for FoolsGold"
     )
     parser.add_argument("--inv", type=int, default=0, help="inv the metric")
+    parser.add_argument(
+        "--indicative_features",
+        type=str,
+        default="all",
+        help="type of indicative features for FoolsGold: all or last",
+    )
 
     args = parser.parse_args()
     return args

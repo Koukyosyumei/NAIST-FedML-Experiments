@@ -80,6 +80,7 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --remove ${remove} \\
   --k ${k} \\
   --inv ${inv} \\
+  --indicative_features ${indicative_features} \\
   --adversary_num ${adversary_num} \\
   --adversary_type ${adversary_type} \\
   --ignore_adversary ${ignore_adversary} \\
