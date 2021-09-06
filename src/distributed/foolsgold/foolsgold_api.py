@@ -59,11 +59,14 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
 
     def _update_weight(self, client_index, model_list):
         for c_idx, local_gradient in zip(client_index, model_list):
-            # flatten_local_gradient = torch.cat(
-            #    [g.to(self.device).view(-1) for g in local_gradient[1]]
-            # )
-            flatten_local_gradient = local_gradient[1][-1].to(self.device).view(-1)
-            print(flatten_local_gradient.shape)
+
+            if self.args.indicative_features == "all":
+                flatten_local_gradient = torch.cat(
+                    [g.to(self.device).view(-1) for g in local_gradient[1]]
+                )
+            elif self.args.indicative_features == "last":
+                flatten_local_gradient = local_gradient[1][-1].to(self.device).view(-1)
+
             if self.round_idx == 0:
                 self.aggregate_historical_gradients[c_idx] = flatten_local_gradient
             else:
