@@ -104,7 +104,10 @@ def load_data(args, dataset_name, adversary_idx=[]):
             test_data_local_dict,
             class_num,
         ) = load_partition_data_federated_shakespeare(
-            args.dataset, args.data_dir, args.client_num_in_total
+            args.dataset,
+            args.data_dir,
+            args.client_num_in_total,
+            batch_size=args.batch_size,
         )
         # args.client_num_in_total = client_num
 
