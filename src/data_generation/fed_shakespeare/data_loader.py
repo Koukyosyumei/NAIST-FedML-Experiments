@@ -2,6 +2,7 @@ import logging
 import os
 
 import h5py
+import numpy as np
 import torch
 import torch.utils.data as data
 
@@ -119,7 +120,7 @@ def load_partition_data_distributed_federated_shakespeare(
 
 
 def load_partition_data_federated_shakespeare(
-    dataset, data_dir, batch_size=DEFAULT_BATCH_SIZE
+    dataset, data_dir, client_num, batch_size=DEFAULT_BATCH_SIZE
 ):
 
     # client id list
@@ -143,13 +144,13 @@ def load_partition_data_federated_shakespeare(
         )
         local_data_num = len(train_data_local.dataset)
         data_local_num_dict[client_idx] = local_data_num
-        logging.info(
-            "client_idx = %d, local_sample_number = %d" % (client_idx, local_data_num)
-        )
-        logging.info(
-            "client_idx = %d, batch_num_train_local = %d, batch_num_test_local = %d"
-            % (client_idx, len(train_data_local), len(test_data_local))
-        )
+        # logging.info(
+        #    "client_idx = %d, local_sample_number = %d" % (client_idx, local_data_num)
+        # )
+        # logging.info(
+        #    "client_idx = %d, batch_num_train_local = %d, batch_num_test_local = %d"
+        #    % (client_idx, len(train_data_local), len(test_data_local))
+        # )
         train_data_local_dict[client_idx] = train_data_local
         test_data_local_dict[client_idx] = test_data_local
 
@@ -161,7 +162,7 @@ def load_partition_data_federated_shakespeare(
         batch_size=batch_size,
         shuffle=True,
     )
-    train_data_num = len(train_data_global.dataset)
+    # train_data_num = len(train_data_global.dataset)
 
     test_data_global = data.DataLoader(
         data.ConcatDataset(
@@ -176,16 +177,31 @@ def load_partition_data_federated_shakespeare(
     )
     test_data_num = len(test_data_global.dataset)
 
+    # select top-k clients
+    top_k_idx = np.argpartition(
+        -np.array(list(data_local_num_dict.values())), client_num
+    )[:client_num]
+    top_k_data_local_num_dict = {
+        i: data_local_num_dict[idx] for i, idx in enumerate(top_k_idx)
+    }
+    top_k_train_data_local_dict = {
+        i: train_data_local_dict[idx] for i, idx in enumerate(top_k_idx)
+    }
+    top_k_test_data_local_dict = {
+        i: test_data_local_dict[idx] for i, idx in enumerate(top_k_idx)
+    }
+    top_k_train_data_num = sum(list(top_k_data_local_num_dict.values()))
+
     VOCAB_LEN = len(utils.get_word_dict()) + 1
     return (
-        DEFAULT_TRAIN_CLIENTS_NUM,
-        train_data_num,
+        client_num,
+        top_k_train_data_num,
         test_data_num,
         train_data_global,
         test_data_global,
-        data_local_num_dict,
-        train_data_local_dict,
-        test_data_local_dict,
+        top_k_data_local_num_dict,
+        top_k_train_data_local_dict,
+        top_k_test_data_local_dict,
         VOCAB_LEN,
     )
 
