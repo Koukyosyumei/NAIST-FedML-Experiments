@@ -1,11 +1,12 @@
 # parameters
 
 method=$1
-source ./config.sh
+config=$2
+source ${config}
 
 # check the arguments
 
-cat ./config.sh
+cat ${config}
 
 # preparation
 

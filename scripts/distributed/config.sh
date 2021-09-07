@@ -67,5 +67,5 @@ noise_amp=0.001
 ## Inflator settings
 water_powered_magnification=10
 inflator_data_size=1250
-inflator_batch_size=10
+inflator_batch_size=2
 num_of_augmentation=0
