@@ -210,8 +210,6 @@ class STD_NUM_DAGMM(STD_DAGMM):
         )
         rec_std = torch.std(x.view(x.shape[0], -1), dim=1)
         rec_local_data_num = local_data_num
-        print("local num shape is ", rec_local_data_num.shape)
-        print("rec_std shape is ", rec_std.shape)
         z = torch.cat(
             [
                 enc,
