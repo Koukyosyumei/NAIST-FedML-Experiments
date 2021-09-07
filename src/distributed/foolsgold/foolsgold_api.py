@@ -72,10 +72,8 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
             else:
                 self.aggregate_historical_gradients[c_idx] += flatten_local_gradient
 
-        for i in range(len(client_index)):
-            for j in range(i + 1, len(client_index)):
-                i_idx = client_index[i]
-                j_idx = client_index[j]
+        for i_idx in range(self.args.client_num_in_total):
+            for j_idx in range(i_idx + 1, self.args.client_num_in_total):
                 self.cs[i_idx][j_idx] = F.cosine_similarity(
                     self.aggregate_historical_gradients[i_idx],
                     self.aggregate_historical_gradients[j_idx],
@@ -85,10 +83,8 @@ class FoolsGoldAggregator(FedAVGGradientAggregator):
                 self.cs[j_idx][i_idx] = self.cs[i_idx][j_idx]
         self.v = np.max(self.cs, axis=1)
 
-        for i in range(len(client_index)):
-            for j in range(len(client_index)):
-                i_idx = client_index[i]
-                j_idx = client_index[j]
+        for i_idx in range(self.args.client_num_in_total):
+            for j_idx in range(self.args.client_num_in_total):
                 if i_idx == j_idx:
                     continue
                 if self.v[j_idx] > self.v[i_idx]:
