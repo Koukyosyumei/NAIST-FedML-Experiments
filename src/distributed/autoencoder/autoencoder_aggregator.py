@@ -96,9 +96,8 @@ class FedAVGAutoEncoderAggregator(FedAVGGradientAggregator):
             )
 
         self.pred_credibility[client_index] = cred.to("cpu").detach().numpy()
-        print("self.adversary_flag", self.adversary_flag)
-        print("self.pred_credibility", self.pred_credibility)
-        print("client_index", client_index)
+
+        print(self.pred_credibility)
 
         auc_crediblity = roc_auc_score(self.adversary_flag, self.pred_credibility)
         wandb.log(
