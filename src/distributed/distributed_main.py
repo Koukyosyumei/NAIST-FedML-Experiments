@@ -11,6 +11,7 @@ import numpy as np
 import psutil
 import setproctitle
 import torch
+import torch.utils.data as data
 
 mpi4py.rc.recv_mprobe = False
 from mpi4py import MPI
@@ -167,21 +168,12 @@ if __name__ == "__main__":
         server_manager_class = SecureFedAVGServerManager
         client_manager_class = FedAVGInflatorClientManager
 
-    # decive adversaries
+    # choose adversaries
     adversary_idx = random.sample(
         list(range(args.client_num_in_total)), args.adversary_num
     )
     adversary_flag = np.zeros(args.client_num_in_total).astype(int)
     adversary_flag[adversary_idx] += 1
-    water_powered_magnification = 1.0
-    if process_id - 1 in adversary_idx:
-        if args.adversary_type == "freerider":
-            logging.info(f"####### process_id = {process_id} is a freerider #######")
-            model_trainer_class = FreeriderModelTrainer
-        elif args.adversary_type == "inflator":
-            logging.info(f"####### process_id = {process_id} is an inflator #######")
-            water_powered_magnification = args.water_powered_magnification
-            args.batch_size = args.inflator_batch_size
 
     # load data
     dataset = load_data(args, args.dataset, adversary_idx=adversary_idx)
@@ -196,6 +188,32 @@ if __name__ == "__main__":
         class_num,
     ] = dataset
 
+    # re-choose adversaries based on the local dataset size
+    if args.poor_adversary == 1:
+        adversary_idx = np.argsort(
+            [train_data_local_num_dict[i] for i in range(args.client_num_in_total)]
+        )[: args.adversary_num].tolist()
+        adversary_flag = np.zeros(args.client_num_in_total).astype(int)
+        adversary_flag[adversary_idx] += 1
+
+    # setting for adversaries
+    water_powered_magnification = 1.0
+    if process_id - 1 in adversary_idx:
+        if args.adversary_type == "freerider":
+            logging.info(f"####### process_id = {process_id} is a freerider #######")
+            model_trainer_class = FreeriderModelTrainer
+        elif args.adversary_type == "inflator":
+            logging.info(f"####### process_id = {process_id} is an inflator #######")
+            water_powered_magnification = args.water_powered_magnification
+            # change the batch_size
+            train_data_local_dict[process_id - 1] = data.DataLoader(
+                dataset=train_data_local_dict[process_id - 1].dataset,
+                batch_size=args.inflator_batch_size,
+                shuffle=True,
+                drop_last=train_data_local_dict[process_id - 1].drop_last,
+            )
+
+    # logging the distribution
     if process_id == 0:
         logging.info(f"######## adversary_idx = {adversary_idx}   ########")
         logging.info(f"######## adversary_flag = {adversary_flag} ########")

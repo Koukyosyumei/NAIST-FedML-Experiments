@@ -221,6 +221,14 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "--poor_adversary",
+        type=int,
+        default=1,
+        help="whether the poorest will be the aggressors:\
+             1 (the poorest are the adversaries) or 0 (random)",
+    )
+
+    parser.add_argument(
         "--water_powered_magnification",
         type=float,
         default=1.0,

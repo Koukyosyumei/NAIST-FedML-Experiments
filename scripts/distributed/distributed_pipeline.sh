@@ -89,6 +89,7 @@ mpirun -np ${np} -npernode ${worker_num_pernode} python3 ${py_file} \\
   --water_powered_magnification ${water_powered_magnification} \\
   --inflator_data_size ${inflator_data_size} \\
   --inflator_batch_size ${inflator_batch_size} \\
+  --poor_adversary ${poor_adversary} \\
   --num_of_augmentation ${num_of_augmentation} \\
   --frequency_of_the_test ${frequency_of_the_test}
   

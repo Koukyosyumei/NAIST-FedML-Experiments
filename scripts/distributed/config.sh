@@ -58,13 +58,14 @@ indicative_features="all"
 adversary_num=10
 adversary_type="inflator"
 ignore_adversary=0
+poor_adversary=1
 
 ## Free-Rider settings
 free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=100
+water_powered_magnification=10
 inflator_data_size=1250
 inflator_batch_size=10
 num_of_augmentation=0
