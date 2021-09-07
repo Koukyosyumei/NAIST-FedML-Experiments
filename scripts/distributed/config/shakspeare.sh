@@ -7,7 +7,7 @@ gpu_mapping_yaml="gpu_mapping.yaml"
 # clients setting
 client_num=50
 client_num_per_round=50
-worker_num_pernode=5
+worker_num_pergpu=5
 
 # py file to be executed
 py_file="./distributed_main.py"

@@ -22,7 +22,7 @@ wandb_api_key=`cat ../wandb_api_key.txt`
 echo -ne "#!/bin/sh
 #$ -S /bin/bash
 #$ -q ${node_type}
-#$ -pe mpi $(((24*$np)/($gpupernode*$worker_num_pernode)))
+#$ -pe mpi $(((24*$np)/($gpupernode*$worker_num_pergpu)))
 
 module load compiler/gcc/7
 module load mpi/openmpi/3.0.0
@@ -44,7 +44,7 @@ wandb online
 
 cd ../../src/distributed
 
-python3 gpu_mapping_yaml_generator.py --client_num_per_round $client_num_per_round --worker_num_pernode $worker_num_pernode --gpupernode $gpupernode
+python3 gpu_mapping_yaml_generator.py --client_num_per_round $client_num_per_round --worker_num_pergpu $worker_num_pergpu --gpupernode $gpupernode
 
 hostname > mpi_host_file
 
@@ -52,9 +52,9 @@ if [ ! -e ${output_dir} ]; then
   mkdir ${output_dir}
 fi
 
-mpirun -np ${np} -npernode ${worker_num_pernode} python3 ${py_file} \\
+mpirun -np ${np} -npernode ${worker_num_pergpu} python3 ${py_file} \\
   --gpu_mapping_file ${gpu_mapping_yaml} \\
-  --gpu_mapping_key mapping_config_client_num_per_round_${client_num_per_round}_worker_num_pernode_${worker_num_pernode}_gpupernode_${gpupernode} \\
+  --gpu_mapping_key mapping_config_client_num_per_round_${client_num_per_round}_worker_num_pergpu_${worker_num_pergpu}_gpupernode_${gpupernode} \\
   --model ${model} \\
   --dataset ${dataset} \\
   --data_dir ${data_dir} \\
@@ -94,7 +94,7 @@ mpirun -np ${np} -npernode ${worker_num_pernode} python3 ${py_file} \\
   --num_of_augmentation ${num_of_augmentation} \\
   --frequency_of_the_test ${frequency_of_the_test}
   
-mpirun -np ${np} -npernode ${worker_num_pernode} ps aux | grep FedAvg" > $script_name
+mpirun -np ${np} -npernode ${worker_num_pergpu} ps aux | grep FedAvg" > $script_name
 
 # submit the auto-generated script
 if [ $submit_script -eq 1 ] ; then

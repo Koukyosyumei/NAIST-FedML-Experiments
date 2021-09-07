@@ -24,7 +24,7 @@ def add_args(parser):
         help="client_num_per_round",
     )
     parser.add_argument(
-        "--worker_num_pernode",
+        "--worker_num_pergpu",
         type=int,
         default=1,
         metavar="CNPN",
@@ -41,29 +41,29 @@ def add_args(parser):
     return parser
 
 
-def create_dict(client_num_per_round, worker_num_pernode, gpupernode, dict_key):
-    worker_num = (client_num_per_round + 1) // (worker_num_pernode * gpupernode)
+def create_dict(client_num_per_round, worker_num_pergpu, gpupernode, dict_key):
+    worker_num = (client_num_per_round + 1) // (worker_num_pergpu * gpupernode)
     worker_num = (
         worker_num + 1
-        if (client_num_per_round + 1) % (worker_num_pernode * gpupernode) != 0
+        if (client_num_per_round + 1) % (worker_num_pergpu * gpupernode) != 0
         else worker_num
     )
 
     mapping_dict = {}
     remaining = client_num_per_round + 1
     for worker_id in range(worker_num):
-        if remaining >= worker_num_pernode * gpupernode:
-            mapping_dict[f"gpu-worker{worker_id}"] = [worker_num_pernode] * gpupernode
-            remaining -= worker_num_pernode * gpupernode
+        if remaining >= worker_num_pergpu * gpupernode:
+            mapping_dict[f"gpu-worker{worker_id}"] = [worker_num_pergpu] * gpupernode
+            remaining -= worker_num_pergpu * gpupernode
         else:
             temp_list = [0] * gpupernode
-            num_used_node = remaining // worker_num_pernode
+            num_used_node = remaining // worker_num_pergpu
             for i in range(num_used_node):
-                temp_list[i] = worker_num_pernode
-            temp_list[num_used_node] = remaining % worker_num_pernode
+                temp_list[i] = worker_num_pergpu
+            temp_list[num_used_node] = remaining % worker_num_pergpu
             mapping_dict[f"gpu-worker{worker_id}"] = temp_list
             remaining -= (
-                num_used_node * worker_num_pernode + remaining % worker_num_pernode
+                num_used_node * worker_num_pergpu + remaining % worker_num_pergpu
             )
 
     print(mapping_dict)
@@ -87,11 +87,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     with open(args.yaml_path, "r") as yamlfile:
         cur_yaml = yaml.safe_load(yamlfile)
-        dict_key = f"mapping_config_client_num_per_round_{args.client_num_per_round}_worker_num_pernode_{args.worker_num_pernode}_gpupernode_{args.gpupernode}"
+        dict_key = f"mapping_config_client_num_per_round_{args.client_num_per_round}_worker_num_pergpu_{args.worker_num_pergpu}_gpupernode_{args.gpupernode}"
         if dict_key not in cur_yaml:
             mapping_dict = create_dict(
                 args.client_num_per_round,
-                args.worker_num_pernode,
+                args.worker_num_pergpu,
                 args.gpupernode,
                 dict_key,
             )
