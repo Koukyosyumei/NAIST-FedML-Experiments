@@ -5,9 +5,9 @@ gpupernode=1
 gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
-client_num=715
-client_num_per_round=5
-worker_num_pernode=1
+client_num=50
+client_num_per_round=50
+worker_num_pernode=5
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -15,7 +15,7 @@ py_file="./distributed_main.py"
 # model and optimier setting
 model="rnn"
 comm_round=105
-epochs=3
+epochs=5
 client_optimizer="sgd"
 lr=1.47
 clip_grad=0
@@ -55,7 +55,7 @@ indicative_features="all"
 ## Quality Inferece (QI) settings
 
 ######## Adversary settings ########
-adversary_num=0
+adversary_num=10
 adversary_type="inflator"
 ignore_adversary=0
 
@@ -64,7 +64,7 @@ free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=10
+water_powered_magnification=100
 inflator_data_size=1250
 inflator_batch_size=10
 num_of_augmentation=0

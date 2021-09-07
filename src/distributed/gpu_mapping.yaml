@@ -417,3 +417,26 @@ mapping_config_client_num_per_round_5_worker_num_pernode_1_gpupernode_1:
     - 1
     gpu-worker5:
     - 1
+mapping_config_client_num_per_round_50_worker_num_pernode_5_gpupernode_1:
+    gpu-worker0:
+    - 5
+    gpu-worker1:
+    - 5
+    gpu-worker10:
+    - 1
+    gpu-worker2:
+    - 5
+    gpu-worker3:
+    - 5
+    gpu-worker4:
+    - 5
+    gpu-worker5:
+    - 5
+    gpu-worker6:
+    - 5
+    gpu-worker7:
+    - 5
+    gpu-worker8:
+    - 5
+    gpu-worker9:
+    - 5
