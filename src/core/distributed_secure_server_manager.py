@@ -77,6 +77,12 @@ class SecureFedAVGServerManager(FedAVGServerManager):
                     self.args.client_num_per_round,
                 )
 
+            # update the loolup table
+            for process_id in range(1, self.size):
+                self.sender_id_to_client_index[process_id] = client_indexes[
+                    process_id - 1
+                ]
+
             print("indexes of clients: " + str(client_indexes))
             print("size = %d" % self.size)
 
