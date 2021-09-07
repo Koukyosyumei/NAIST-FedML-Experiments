@@ -21,24 +21,22 @@ import wandb
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
 from fedml_api.distributed.fedavg.FedAVGAggregator import FedAVGAggregator
 from fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
-from fedml_api.distributed.fedavg.FedAvgServerManager import FedAVGServerManager
+from fedml_api.distributed.fedavg.FedAvgServerManager import \
+    FedAVGServerManager
 from fedml_api.distributed.fedavg.FedAVGTrainer import FedAVGTrainer
-from fedml_api.distributed.utils.gpu_mapping import (
-    mapping_processes_to_gpu_device_from_yaml_file,
-)
-from fedml_api.standalone.fedavg.my_model_trainer_classification import (
-    MyModelTrainer as MyModelTrainerCLS,
-)
+from fedml_api.distributed.utils.gpu_mapping import \
+    mapping_processes_to_gpu_device_from_yaml_file
+from fedml_api.standalone.fedavg.my_model_trainer_classification import \
+    MyModelTrainer as MyModelTrainerCLS
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../")))
-from core.distributed_api import (
-    Client_Initializer,
-    FedML_Distributed_Custom_API,
-    Server_Initializer,
-)
+from core.distributed_api import (Client_Initializer,
+                                  FedML_Distributed_Custom_API,
+                                  Server_Initializer)
 from core.distributed_secure_server_manager import SecureFedAVGServerManager
-from core.gradient_trainer import GradientModelTrainerCLS, GradientModelTrainerNWP
+from core.gradient_trainer import (GradientModelTrainerCLS,
+                                   GradientModelTrainerNWP)
 
 from autoencoder.autoencoder_aggregator import FedAVGAutoEncoderAggregator
 from distributed_args import add_args
@@ -49,9 +47,8 @@ from fedavg.fedavg_gradient_trainer import FedAVGGradTrainer
 from foolsgold.foolsgold_api import FoolsGoldAggregator
 from freerider.freerider_modeltrainer import FreeriderModelTrainer
 from inflator.inflator_client_manager import FedAVGInflatorClientManager
-from qualityinference.qualityinference_aggregator import (
-    FedAVGQualityInferenceAggregator,
-)
+from qualityinference.qualityinference_aggregator import \
+    FedAVGQualityInferenceAggregator
 from rffl.rffl_aggregator import RFFLAggregator
 from rffl.rffl_clientmanager import RFFLClientManager
 from rffl.rffl_trainer import RFFLTrainer

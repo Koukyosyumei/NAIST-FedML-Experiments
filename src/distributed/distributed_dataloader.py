@@ -103,10 +103,8 @@ def load_data(args, dataset_name, adversary_idx=[]):
             train_data_local_dict,
             test_data_local_dict,
             class_num,
-        ) = load_partition_data_federated_shakespeare(
-            args.dataset, args.data_dir, args.client_num_in_total
-        )
-        # args.client_num_in_total = client_num
+        ) = load_partition_data_federated_shakespeare(args.dataset, args.data_dir)
+        args.client_num_in_total = client_num
 
     elif dataset_name == "fed_cifar100":
         logging.info("load_data. dataset_name = %s" % dataset_name)

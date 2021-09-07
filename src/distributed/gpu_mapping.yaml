@@ -271,3 +271,149 @@ mapping_config_client_num_per_round_50_worker_num_pernode_2_gpupernode_1:
     - 2
     gpu-worker9:
     - 2
+mapping_config_client_num_per_round_715_worker_num_pernode_55_gpupernode_1:
+    gpu-worker0:
+    - 55
+    gpu-worker1:
+    - 55
+    gpu-worker10:
+    - 55
+    gpu-worker11:
+    - 55
+    gpu-worker12:
+    - 55
+    gpu-worker13:
+    - 1
+    gpu-worker2:
+    - 55
+    gpu-worker3:
+    - 55
+    gpu-worker4:
+    - 55
+    gpu-worker5:
+    - 55
+    gpu-worker6:
+    - 55
+    gpu-worker7:
+    - 55
+    gpu-worker8:
+    - 55
+    gpu-worker9:
+    - 55
+mapping_config_client_num_per_round_715_worker_num_pernode_24_gpupernode_1:
+    gpu-worker0:
+    - 24
+    gpu-worker1:
+    - 24
+    gpu-worker10:
+    - 24
+    gpu-worker11:
+    - 24
+    gpu-worker12:
+    - 24
+    gpu-worker13:
+    - 24
+    gpu-worker14:
+    - 24
+    gpu-worker15:
+    - 24
+    gpu-worker16:
+    - 24
+    gpu-worker17:
+    - 24
+    gpu-worker18:
+    - 24
+    gpu-worker19:
+    - 24
+    gpu-worker2:
+    - 24
+    gpu-worker20:
+    - 24
+    gpu-worker21:
+    - 24
+    gpu-worker22:
+    - 24
+    gpu-worker23:
+    - 24
+    gpu-worker24:
+    - 24
+    gpu-worker25:
+    - 24
+    gpu-worker26:
+    - 24
+    gpu-worker27:
+    - 24
+    gpu-worker28:
+    - 24
+    gpu-worker29:
+    - 20
+    gpu-worker3:
+    - 24
+    gpu-worker4:
+    - 24
+    gpu-worker5:
+    - 24
+    gpu-worker6:
+    - 24
+    gpu-worker7:
+    - 24
+    gpu-worker8:
+    - 24
+    gpu-worker9:
+    - 24
+mapping_config_client_num_per_round_20_worker_num_pernode_1_gpupernode_1:
+    gpu-worker0:
+    - 1
+    gpu-worker1:
+    - 1
+    gpu-worker10:
+    - 1
+    gpu-worker11:
+    - 1
+    gpu-worker12:
+    - 1
+    gpu-worker13:
+    - 1
+    gpu-worker14:
+    - 1
+    gpu-worker15:
+    - 1
+    gpu-worker16:
+    - 1
+    gpu-worker17:
+    - 1
+    gpu-worker18:
+    - 1
+    gpu-worker19:
+    - 1
+    gpu-worker2:
+    - 1
+    gpu-worker20:
+    - 1
+    gpu-worker3:
+    - 1
+    gpu-worker4:
+    - 1
+    gpu-worker5:
+    - 1
+    gpu-worker6:
+    - 1
+    gpu-worker7:
+    - 1
+    gpu-worker8:
+    - 1
+    gpu-worker9:
+    - 1
+mapping_config_client_num_per_round_5_worker_num_pernode_1_gpupernode_1:
+    gpu-worker0:
+    - 1
+    gpu-worker1:
+    - 1
+    gpu-worker2:
+    - 1
+    gpu-worker3:
+    - 1
+    gpu-worker4:
+    - 1
+    gpu-worker5:
+    - 1
