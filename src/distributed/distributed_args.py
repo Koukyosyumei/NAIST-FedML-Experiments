@@ -221,6 +221,20 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "--inflator_strategy",
+        type=str,
+        default="simple",
+        help="strategy of inflators: simple or multiple accounts",
+    )
+
+    parser.add_argument(
+        "--multiple_accounts_split",
+        type=float,
+        default=0.8,
+        help="ratio of multiple accounts split",
+    )
+
+    parser.add_argument(
         "--poor_adversary",
         type=int,
         default=1,
