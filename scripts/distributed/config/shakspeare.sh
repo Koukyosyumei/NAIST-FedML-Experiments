@@ -9,6 +9,9 @@ client_num=50
 client_num_per_round=50
 worker_num_pergpu=5
 
+# method
+method="AE"
+
 # py file to be executed
 py_file="./distributed_main.py"
 
@@ -57,6 +60,8 @@ indicative_features="all"
 ######## Adversary settings ########
 adversary_num=10
 adversary_type="inflator"
+inflator_strategy="simple"
+multiple_accounts_split=0.8
 ignore_adversary=0
 poor_adversary=1
 
