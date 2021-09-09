@@ -51,7 +51,7 @@ sparcity=1
 remove=1
 
 ## FoolsGold settings
-k=0.005
+k=0.02
 inv=0
 indicative_features="all"
 
