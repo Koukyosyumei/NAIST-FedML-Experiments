@@ -218,7 +218,7 @@ if __name__ == "__main__":
     if args.inflator_strategy == "multiple_accounts":
         logging.info("######## create fake accounts ########")
         for i in range(1, len(adversary_idx)):
-            random.seed(adversary_idx[0])
+            random.seed(adversary_idx[i])
             base_local_num = train_data_local_num_dict[adversary_idx[0]]
             idx = random.sample(
                 range(base_local_num),
@@ -226,25 +226,21 @@ if __name__ == "__main__":
             )
 
             if args.dataset == "cifar10":
-                train_data_local_dict[
-                    adversary_idx[i]
-                ].dataset.data = train_data_local_dict[adversary_idx[0]].dataset.data[
-                    idx
-                ]
-                train_data_local_dict[
-                    adversary_idx[i]
-                ].dataset.targets = train_data_local_dict[
-                    adversary_idx[0]
-                ].dataset.target[
-                    idx
-                ]
+                train_data_local_dict[adversary_idx[i]].dataset.data = copy.deepcopy(
+                    train_data_local_dict[adversary_idx[0]].dataset.data[idx]
+                )
+                train_data_local_dict[adversary_idx[i]].dataset.target = copy.deepcopy(
+                    train_data_local_dict[adversary_idx[0]].dataset.target[idx]
+                )
             elif args.dataset == "fed_shakespeare":
-                train_data_local_dict[adversary_idx[i]].dataset.tensors[
-                    0
-                ] = train_data_local_dict[adversary_idx[0]].dataset.tensors[0][idx]
-                train_data_local_dict[adversary_idx[i]].dataset.tensors[
-                    1
-                ] = train_data_local_dict[adversary_idx[0]].dataset.tensors[1][idx]
+                train_data_local_dict[adversary_idx[i]].dataset.tensors = (
+                    copy.deepcopy(
+                        train_data_local_dict[adversary_idx[0]].dataset.tensors[0][idx]
+                    ),
+                    copy.deepcopy(
+                        train_data_local_dict[adversary_idx[0]].dataset.tensors[1][idx]
+                    ),
+                )
 
     random.seed(0)
 
