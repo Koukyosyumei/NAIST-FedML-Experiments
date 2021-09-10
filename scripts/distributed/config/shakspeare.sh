@@ -6,11 +6,11 @@ gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
 client_num=50
-client_num_per_round=50
-worker_num_pergpu=5
+client_num_per_round=10
+worker_num_pergpu=1
 
 # method
-method="AE"
+method="QI"
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -70,7 +70,7 @@ free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=10
+water_powered_magnification=2
 inflator_data_size=1250
-inflator_batch_size=2
+inflator_batch_size=10
 num_of_augmentation=0

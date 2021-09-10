@@ -526,3 +526,60 @@ mapping_config_client_num_per_round_20_worker_num_pergpu_5_gpupernode_1:
     - 5
     gpu-worker4:
     - 1
+mapping_config_client_num_per_round_10_worker_num_pergpu_1_gpupernode_1:
+    gpu-worker0:
+    - 1
+    gpu-worker1:
+    - 1
+    gpu-worker10:
+    - 1
+    gpu-worker2:
+    - 1
+    gpu-worker3:
+    - 1
+    gpu-worker4:
+    - 1
+    gpu-worker5:
+    - 1
+    gpu-worker6:
+    - 1
+    gpu-worker7:
+    - 1
+    gpu-worker8:
+    - 1
+    gpu-worker9:
+    - 1
+mapping_config_client_num_per_round_10_worker_num_pergpu_5_gpupernode_2:
+    gpu-worker0:
+    - 5
+    - 5
+    gpu-worker1:
+    - 1
+    - 0
+mapping_config_client_num_per_round_25_worker_num_pergpu_2_gpupernode_1:
+    gpu-worker0:
+    - 2
+    gpu-worker1:
+    - 2
+    gpu-worker10:
+    - 2
+    gpu-worker11:
+    - 2
+    gpu-worker12:
+    - 2
+    gpu-worker2:
+    - 2
+    gpu-worker3:
+    - 2
+    gpu-worker4:
+    - 2
+    gpu-worker5:
+    - 2
+    gpu-worker6:
+    - 2
+    gpu-worker7:
+    - 2
+    gpu-worker8:
+    - 2
+    gpu-worker9:
+    - 2

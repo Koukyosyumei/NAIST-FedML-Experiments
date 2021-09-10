@@ -1,16 +1,16 @@
 ######## General settings ########
 # cluster setting
-node_type="pascal_short.q"
-gpupernode=2
+node_type="grid_short.q"
+gpupernode=1
 gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
-client_num=10
+client_num=20
 client_num_per_round=10
-worker_num_pergpu=1
+worker_num_pergpu=5
 
 # method
-method="FoolsGold"
+method="QI"
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -60,7 +60,7 @@ indicative_features="all"
 ######## Adversary settings ########
 adversary_num=2
 adversary_type="inflator"
-inflator_strategy="multiple_accounts"
+inflator_strategy="simple"
 multiple_accounts_split=1.0
 ignore_adversary=0
 poor_adversary=0
@@ -70,7 +70,7 @@ free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=1
-inflator_data_size=5000
+water_powered_magnification=10
+inflator_data_size=250
 inflator_batch_size=20
 num_of_augmentation=0
