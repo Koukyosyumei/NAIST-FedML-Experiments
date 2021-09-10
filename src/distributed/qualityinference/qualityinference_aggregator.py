@@ -1,8 +1,12 @@
 import copy
+import logging
 import os
+import pickle
 import sys
+import time
 
 import numpy as np
+import torch
 import wandb
 from sklearn.metrics import roc_auc_score
 
@@ -45,13 +49,11 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
         self.acc_improve_prev = 0
         self.acc_curr = 0
         self.acc_prev = 0
-        self.prev_client_index = None
+        self.client_index = []
+        self.prev_client_index = []
 
     def anomalydetection(self, sender_id_to_client_index):
-        client_index = []
-        for idx in range(self.worker_num):
-            client_index.append(sender_id_to_client_index[idx + 1])
-
+        client_index = self.client_index
         test_num_samples = []
         test_tot_corrects = []
         metrics = self.trainer.test(self.test_global, self.device, self.args)
@@ -87,3 +89,52 @@ class FedAVGQualityInferenceAggregator(FedAVGGradientAggregator):
         )
 
         self.prev_client_index = client_index
+
+    def aggregate(self, sender_id_to_client_index, client_index):
+        self.client_index = client_index
+        start_time = time.time()
+        model_list = []
+        training_num = 0
+
+        # self.model_dict: sender_id - 1 to mdoel
+        # self.sample_num_dict: sender_id - 1 to sample_num
+
+        for idx in range(self.worker_num):
+            if self.args.is_mobile == 1:
+                self.model_dict[idx] = transform_list_to_grad(self.model_dict[idx])
+            if sender_id_to_client_index[idx + 1] in client_index:
+                model_list.append((self.sample_num_dict[idx], self.model_dict[idx]))
+                training_num += self.sample_num_dict[idx]
+                self.model_list_history[sender_id_to_client_index[idx + 1]].append(
+                    (self.sample_num_dict[idx], self.model_dict[idx])
+                )
+
+        self.round_idx += 1
+        if self.round_idx == self.args.comm_round:
+            with open(
+                f"{self.args.output_dir}/model_list_history.pickle", mode="wb"
+            ) as f:
+                logging.info("saving history")
+                pickle.dump(self.model_list_history, f)
+
+        logging.info("len of model_list = " + str(len(model_list)))
+
+        averaged_gradient = [
+            torch.zeros(grad.shape).to(self.device) for grad in model_list[0][1]
+        ]
+
+        for i in range(0, len(model_list)):
+            local_sample_number, local_gradient = model_list[i]
+            w = local_sample_number / training_num
+            for grad_idx in range(len(averaged_gradient)):
+                averaged_gradient[grad_idx].data += (
+                    local_gradient[grad_idx].data.to(self.device) * w
+                )
+
+        # update the global model which is cached at the server side
+        self.set_global_model_gradients(averaged_gradient, self.device, weight=1)
+        averaged_params = self.get_global_model_params()
+
+        end_time = time.time()
+        logging.info("aggregate time cost: %d" % (end_time - start_time))
+        return averaged_params
