@@ -206,7 +206,6 @@ if __name__ == "__main__":
             model_trainer_class = FreeriderModelTrainer
         elif args.adversary_type == "inflator":
             logging.info(f"####### process_id = {process_id} is an inflator #######")
-            water_powered_magnification = args.water_powered_magnification
             # change the batch_size
             train_data_local_dict[process_id - 1] = data.DataLoader(
                 dataset=train_data_local_dict[process_id - 1].dataset,
@@ -215,7 +214,11 @@ if __name__ == "__main__":
                 drop_last=train_data_local_dict[process_id - 1].drop_last,
             )
 
+    if args.inflator_strategy == "small_lr" and process_id - 1 in adversary_idx:
+        pass
+
     if args.inflator_strategy == "multiple_accounts":
+
         logging.info("######## create fake accounts ########")
         for i in range(1, len(adversary_idx)):
             random.seed(adversary_idx[i])
@@ -285,8 +288,9 @@ if __name__ == "__main__":
             server_initializer,
             client_initializer,
             model_trainer,
+            adversary_idx=adversary_idx,
             adversary_flag=adversary_flag,
-            water_powered_magnification=water_powered_magnification,
+            water_powered_magnification=args.water_powered_magnification,
         )
     except Exception as e:
         logging.info(e)
