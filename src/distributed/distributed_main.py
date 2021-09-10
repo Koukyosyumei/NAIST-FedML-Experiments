@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     # initialize the wandb machine learning experimental tracking platform (https://www.wandb.com/).
     if process_id == 0:
-        wandb.init(
+        wandb_object = wandb.init(
             # project="federated_nas",
             project="fedml",
             name=args.method
@@ -191,12 +191,45 @@ if __name__ == "__main__":
 
     # re-choose adversaries based on the local dataset size
     if args.poor_adversary == 1:
-        logging.info(f"####### re-assigin adversaries #######")
+        # the clients with the least amount of data are the attacker
+        logging.info(
+            f"####### re-assigin adversaries: poor_adversary={args.poor_adversary} #######"
+        )
         adversary_idx = np.argsort(
             [train_data_local_num_dict[i] for i in range(args.client_num_in_total)]
         )[: args.adversary_num].tolist()
         adversary_flag = np.zeros(args.client_num_in_total).astype(int)
         adversary_flag[adversary_idx] += 1
+    elif args.poor_adversary == -1:
+        # clients with the median number of data are the attacker
+        logging.info(
+            f"####### re-assigin adversaries: poor_adversary={args.poor_adversary} #######"
+        )
+        sorted_idx = np.argsort(
+            [train_data_local_num_dict[i] for i in range(args.client_num_in_total)]
+        )
+
+        adversary_mid_idx = (
+            int(args.client_num_in_total / 2)
+            if args.client_num_in_total % 2 == 0
+            else int((args.client_num_in_total + 1) / 2)
+        )
+        adversary_left = (
+            int(args.adversary_num / 2)
+            if args.adversary_num % 2 == 0
+            else int((args.adversary_num + 1) / 2)
+        )
+        adversary_right = args.adversary_num - adversary_left
+        adversary_idx = (
+            sorted_idx[adversary_mid_idx - adversary_left : adversary_mid_idx].tolist()
+            + sorted_idx[
+                adversary_mid_idx : adversary_mid_idx + adversary_right
+            ].tolist()
+        )
+        adversary_flag = np.zeros(args.client_num_in_total).astype(int)
+        adversary_flag[adversary_idx] += 1
+
+    assert np.sum(adversary_flag) == args.adversary_num
 
     # setting for adversaries
     water_powered_magnification = 1.0
