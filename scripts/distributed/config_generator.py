@@ -38,12 +38,12 @@ variables_settings = {
 
 def main():
     methods = [
-        "FedAvg",
-        "STD-DAGMM",
-        "STD-NUM-DAGMM",
+        # "FedAvg",
+        # "STD-DAGMM",
+        # "STD-NUM-DAGMM",
         "QI",
-        "FoolsGold",
-        "INV-FoolsGold",
+        # "FoolsGold",
+        # "INV-FoolsGold",
     ]
     # datasets = ["cifar10", "fed_shakespeare"]
     datasets = ["fed_shakespeare"]
@@ -78,7 +78,7 @@ def main():
                 if method_name == "QI":
                     variables_settings["client_num_per_round"] = int(c_num / 2)
                 else:
-                    variables_settings["client_num_per_round"] = c_num
+                    variables_settings["client_num_per_round"] = int(c_num)
                 for a_rat in adversary_ratio:
 
                     variables_settings["adversary_num"] = int(c_num * a_rat)
