@@ -13,6 +13,7 @@ import psutil
 import setproctitle
 import torch
 import torch.utils.data as data
+import torchvision
 
 mpi4py.rc.recv_mprobe = False
 from mpi4py import MPI
@@ -250,7 +251,50 @@ if __name__ == "__main__":
     if args.inflator_strategy == "small_lr" and process_id - 1 in adversary_idx:
         pass
 
-    if args.inflator_strategy == "multiple_accounts":
+    elif args.inflator_strategy == "data_augmentation":
+        if args.dataset == "cifar10":
+            adversary_transform = torchvision.transforms.Compose(
+                [
+                    torchvision.transforms.ToPILImage(),
+                    torchvision.transforms.RandomCrop(32, padding=4),
+                    torchvision.transforms.RandomHorizontalFlip(),
+                    torchvision.transforms.ToTensor(),
+                    # transforms.ToPILImage(),
+                    # transforms.Normalize(CIFAR_MEAN, CIFAR_STD),
+                ]
+            )
+            for idx in adversary_idx:
+                transformed_data = []
+                transformed_target = []
+                temp_dataset = copy.deepcopy(train_data_local_dict[idx].dataset)
+                temp_dataset.transform = adversary_transform
+                temp_dataloader = data.DataLoader(
+                    dataset=temp_dataset,
+                    batch_size=1,
+                    shuffle=True,
+                    drop_last=train_data_local_dict[idx].drop_last,
+                )
+
+                for xs, ys in temp_dataloader:
+                    transformed_data.append(
+                        np.array(torchvision.transforms.functional.to_pil_image(xs[0]))
+                    )
+                    transformed_target.append(ys.numpy())
+
+                transformed_data = np.stack(transformed_data)
+                transformed_target = np.concatenate(transformed_target)
+
+                train_data_local_dict[idx].dataset.data = np.concatenate(
+                    [train_data_local_dict[idx].dataset.data, transformed_data]
+                )
+                train_data_local_dict[idx].dataset.target = np.concatenate(
+                    [
+                        train_data_local_dict[idx].dataset.target,
+                        transformed_target,
+                    ]
+                )
+
+    elif args.inflator_strategy == "multiple_accounts":
 
         logging.info("######## create fake accounts ########")
         for i in range(1, len(adversary_idx)):
