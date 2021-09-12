@@ -162,6 +162,28 @@ def partition_data(
         for i, nid in enumerate(list(set(list(range(n_nets))) - set(adversary_idx))):
             net_dataidx_map[nid] = batch_idxs[i]
 
+    elif partition == "pow":
+        total_num = n_train
+        net_dataidx_map = {i: [] for i in range(n_nets)}
+        idxs = random.sample(list(range(n_train)), total_num)
+
+        if n_nets == 10:
+            # num_data_list = np.geomspace(200, 20000, 10).astype(int)
+            num_data_list = np.geomspace(250, 2500, 50).astype(int)
+        elif n_nets == 20:
+            # num_data_list = np.geomspace(108, 10800, 20).astype(int)
+            num_data_list = np.geomspace(625, 6250, 20).astype(int)
+        elif n_nets == 50:
+            # num_data_list = np.geomspace(45, 4500, 50).astype(int)
+            num_data_list = np.geomspace(250, 2500, 50).astype(int)
+        num_data_list[-1] += 50000 - sum(num_data_list)
+
+        for i, nid in enumerate(list(range(n_nets))):
+            temp_idx = random.sample(idxs, int(num_data_list[i]))
+            net_dataidx_map[nid] = np.array(temp_idx)
+            idxs = list(set(idxs) - set(temp_idx))
+        # assert len(idxs) == 0
+
     elif partition == "hetero":
         adversary_num = len(adversary_idx)
         total_num = int(
