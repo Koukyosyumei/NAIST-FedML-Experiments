@@ -1,16 +1,16 @@
 ######## General settings ########
 # cluster setting
-node_type="grid_short.q"
-gpupernode=1
+node_type="pascal_short.q"
+gpupernode=2
 gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
 client_num=20
-client_num_per_round=10
-worker_num_pergpu=5
+client_num_per_round=20
+worker_num_pergpu=1
 
 # method
-method="QI"
+method="AE"
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -27,7 +27,7 @@ max_norm=1
 # dataset setting
 dataset="cifar10"
 data_dir="/work/hideaki-t/dev/FedML/data/cifar10"
-partition_method="homo"
+partition_method="pow"
 partition_alpha=0.1
 batch_size=20
 
@@ -60,7 +60,7 @@ indicative_features="all"
 ######## Adversary settings ########
 adversary_num=2
 adversary_type="inflator"
-inflator_strategy="simple"
+inflator_strategy="data_augmentation"
 multiple_accounts_split=1.0
 ignore_adversary=0
 poor_adversary=0
@@ -70,7 +70,7 @@ free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=10
+water_powered_magnification=2
 inflator_data_size=250
 inflator_batch_size=20
 num_of_augmentation=0
