@@ -106,7 +106,7 @@ class FedAVGInflatorClientManager(ClientManager):
         logging.info(f"adversary_idx = {self.adversary_idx}")
         if self.client_index in self.adversary_idx:
             logging.info(
-                f"#######client_index={self.client_index} (rank={self.rank}) is an adversary"
+                f"#######client_index={self.client_index} (rank={self.rank}) is an adversary: {self.water_powered_magnification}x"
             )
             local_sample_num = int(local_sample_num * self.water_powered_magnification)
         self.send_model_to_server(0, weights, local_sample_num)
