@@ -63,8 +63,19 @@ from stdmonitor.std_aggregator import STDFedAVGAggregator
 
 SEED = 42
 
+
+def set_seed(seed=0):
+    # Set the random seed. The np.random seed determines the dataset partition.
+    # The torch_manual_seed determines the initial weight.
+    # We fix these two, so that we can reproduce the result.
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+
 if __name__ == "__main__":
-    random.seed(SEED)
+    set_seed(seed=0)
 
     # quick fix for issue in MacOS environment: https://github.com/openai/spinningup/issues/16
     if sys.platform == "darwin":
@@ -119,14 +130,6 @@ if __name__ == "__main__":
             + str(args.lr),
             config=args,
         )
-
-    # Set the random seed. The np.random seed determines the dataset partition.
-    # The torch_manual_seed determines the initial weight.
-    # We fix these two, so that we can reproduce the result.
-    random.seed(0)
-    np.random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed_all(0)
 
     # Please check "GPU_MAPPING.md" to see how to define the topology
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
@@ -201,6 +204,36 @@ if __name__ == "__main__":
         )[: args.adversary_num].tolist()
         adversary_flag = np.zeros(args.client_num_in_total).astype(int)
         adversary_flag[adversary_idx] += 1
+
+        if args.partition_method == "pow":
+            for aid in adversary_idx:
+
+                idx = random.sample(
+                    range(train_data_local_num_dict[aid]),
+                    int(
+                        train_data_local_num_dict[aid]
+                        / args.water_powered_magnification
+                    ),
+                )
+                train_data_local_num_dict[aid] = len(idx)
+
+                if args.dataset == "cifar10":
+                    train_data_local_dict[aid].dataset.data = copy.deepcopy(
+                        train_data_local_dict[aid].dataset.data[idx]
+                    )
+                    train_data_local_dict[aid].dataset.target = copy.deepcopy(
+                        train_data_local_dict[aid].dataset.target[idx]
+                    )
+                elif args.dataset == "fed_shakespeare":
+                    train_data_local_dict[aid].dataset.tensors = (
+                        copy.deepcopy(
+                            train_data_local_dict[aid].dataset.tensors[0][idx]
+                        ),
+                        copy.deepcopy(
+                            train_data_local_dict[aid].dataset.tensors[1][idx]
+                        ),
+                    )
+
     elif args.poor_adversary == -1:
         # clients with the median number of data are the attacker
         logging.info(
@@ -229,8 +262,6 @@ if __name__ == "__main__":
         )
         adversary_flag = np.zeros(args.client_num_in_total).astype(int)
         adversary_flag[adversary_idx] += 1
-
-    assert np.sum(adversary_flag) == args.adversary_num
 
     # setting for adversaries
     water_powered_magnification = 1.0
@@ -275,11 +306,15 @@ if __name__ == "__main__":
                     drop_last=train_data_local_dict[idx].drop_last,
                 )
 
-                for xs, ys in temp_dataloader:
-                    transformed_data.append(
-                        np.array(torchvision.transforms.functional.to_pil_image(xs[0]))
-                    )
-                    transformed_target.append(ys.numpy())
+                for i in range(args.water_powered_magnification - 1):
+                    set_seed(seed=SEED + i)
+                    for xs, ys in temp_dataloader:
+                        transformed_data.append(
+                            np.array(
+                                torchvision.transforms.functional.to_pil_image(xs[0])
+                            )
+                        )
+                        transformed_target.append(ys.numpy())
 
                 transformed_data = np.stack(transformed_data)
                 transformed_target = np.concatenate(transformed_target)
@@ -297,9 +332,16 @@ if __name__ == "__main__":
     elif args.inflator_strategy == "multiple_accounts":
 
         logging.info("######## create fake accounts ########")
-        for i in range(1, len(adversary_idx)):
+        mid_idx = (
+            int(len(adversary_idx) / 2)
+            if len(adversary_idx) % 2 == 0
+            else int((len(adversary_idx) + 1) / 2)
+        )
+        base_local_num = train_data_local_num_dict[adversary_idx[mid_idx]]
+        base_dataloader = copy.deepcopy(train_data_local_dict[adversary_idx[mid_idx]])
+
+        for i in range(len(adversary_idx)):
             random.seed(adversary_idx[i])
-            base_local_num = train_data_local_num_dict[adversary_idx[0]]
             idx = random.sample(
                 range(base_local_num),
                 int(base_local_num * args.multiple_accounts_split),
@@ -307,29 +349,29 @@ if __name__ == "__main__":
 
             if args.dataset == "cifar10":
                 train_data_local_dict[adversary_idx[i]].dataset.data = copy.deepcopy(
-                    train_data_local_dict[adversary_idx[0]].dataset.data[idx]
+                    base_dataloader.dataset.data[idx]
                 )
                 train_data_local_dict[adversary_idx[i]].dataset.target = copy.deepcopy(
-                    train_data_local_dict[adversary_idx[0]].dataset.target[idx]
+                    base_dataloader.dataset.target[idx]
                 )
             elif args.dataset == "fed_shakespeare":
                 train_data_local_dict[adversary_idx[i]].dataset.tensors = (
-                    copy.deepcopy(
-                        train_data_local_dict[adversary_idx[0]].dataset.tensors[0][idx]
-                    ),
-                    copy.deepcopy(
-                        train_data_local_dict[adversary_idx[0]].dataset.tensors[1][idx]
-                    ),
+                    copy.deepcopy(base_dataloader.dataset.tensors[0][idx]),
+                    copy.deepcopy(base_dataloader.dataset.tensors[1][idx]),
                 )
 
-    random.seed(0)
+            train_data_local_num_dict[adversary_idx[i]] = len(idx)
+
+    # reset the seed
+    set_seed(seed=0)
+    assert np.sum(adversary_flag) == args.adversary_num
 
     # logging the distribution
     if process_id == 0:
         logging.info(f"######## adversary_idx = {adversary_idx}   ########")
         logging.info(f"######## adversary_flag = {adversary_flag} ########")
         logging.info(
-            f"######## train_data_local_num_dict = {train_data_local_num_dict} ########"
+            f"######## sum of train_data_local_num_dict = {sum(list(train_data_local_num_dict.values()))} ########"
         )
 
     # create model.
