@@ -702,3 +702,22 @@ mapping_config_client_num_per_round_20_worker_num_pergpu_1_gpupernode_1:
     - 1
     gpu-worker9:
     - 1
+mapping_config_client_num_per_round_50_worker_num_pergpu_6_gpupernode_1:
+    gpu-worker0:
+    - 6
+    gpu-worker1:
+    - 6
+    gpu-worker2:
+    - 6
+    gpu-worker3:
+    - 6
+    gpu-worker4:
+    - 6
+    gpu-worker5:
+    - 6
+    gpu-worker6:
+    - 6
+    gpu-worker7:
+    - 6
+    gpu-worker8:
+    - 3

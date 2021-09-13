@@ -42,18 +42,19 @@ def main():
     methods = [
         # "FedAvg",
         # "STD-DAGMM",
-        # "STD-NUM-DAGMM",
+        "STD-NUM-DAGMM",
         "QI",
-        # "FoolsGold",
+        "FoolsGold",
         # "INV-FoolsGold",
     ]
     # datasets = ["cifar10", "fed_shakespeare"]
-    datasets = ["cifar10"]
+    datasets = ["cifar10", "fed_shakespeare"]
     client_num = [50, 20]  # [50, 20]
     adversary_ratio = [0.2, 0.05]
-    magnifications = [2]
-    # inflator_strategy = ["simple", "multiple_accounts"]
-    inflator_strategy = ["data_augmentation"]
+    magnifications = [2, 10]
+    # inflator_strategy = ["simple", "multiple_accounts", "data_augmentation"]
+    inflator_strategy = ["simple"]
+    small_batch = True
 
     for method_name in methods:
 
@@ -93,7 +94,7 @@ def main():
                             "data_dir"
                         ] = "/work/hideaki-t/dev/FedML/data/cifar10"
                         variables_settings["batch_size"] = 20
-                        variables_settings["poor_adversary"] = -1
+                        variables_settings["poor_adversary"] = 1
                         variables_settings["client_optimizer"] = "adam"
                     elif dataset == "fed_shakespeare":
                         variables_settings["model"] = "rnn"
@@ -102,7 +103,7 @@ def main():
                             "data_dir"
                         ] = "/work/hideaki-t/dev/FedML/data/fed_shakespeare/datasets"
                         variables_settings["batch_size"] = 10
-                        variables_settings["poor_adversary"] = -1
+                        variables_settings["poor_adversary"] = 1
                         variables_settings["client_optimizer"] = "sgd"
 
                     for inf_strategy in inflator_strategy:
@@ -119,7 +120,8 @@ def main():
                                 (50000 / c_num) / mag
                             )
 
-                            for i in list(set([1, mag])):
+                            temp_mag = [1, mag] if small_batch else [1]
+                            for i in list(set(temp_mag)):
                                 variables_settings["inflator_batch_size"] = int(
                                     variables_settings["batch_size"] / i
                                 )
