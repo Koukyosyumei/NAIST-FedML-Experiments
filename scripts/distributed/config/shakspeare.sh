@@ -6,11 +6,11 @@ gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
 client_num=20
-client_num_per_round=10
+client_num_per_round=20
 worker_num_pergpu=5
 
 # method
-method="QI"
+method="FoolsGold"
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -27,7 +27,7 @@ max_norm=1
 # dataset setting
 dataset="fed_shakespeare"
 data_dir="/work/hideaki-t/dev/FedML/data/fed_shakespeare/datasets"
-partition_method="hetero"
+partition_method="pow"
 partition_alpha=0.1
 batch_size=10
 
@@ -60,7 +60,7 @@ indicative_features="all"
 ######## Adversary settings ########
 adversary_num=4
 adversary_type="inflator"
-inflator_strategy="multiple_accounts"
+inflator_strategy="simple"
 multiple_accounts_split=0.8
 ignore_adversary=0
 poor_adversary=-1
@@ -70,7 +70,8 @@ free_rider_strategy="advanced-delta"
 noise_amp=0.001
 
 ## Inflator settings
-water_powered_magnification=1
+water_powered_magnification=2
 inflator_data_size=1250
 inflator_batch_size=10
+inflator_lr_weight=0.7
 num_of_augmentation=0

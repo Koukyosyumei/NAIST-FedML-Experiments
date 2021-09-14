@@ -33,6 +33,7 @@ constant_settings = {
 }
 
 variables_settings = {
+    "inflator_lr_weight": 1.0,
     "autoencoder_type": "STD-DAGMM",
     "inv": 0,
 }

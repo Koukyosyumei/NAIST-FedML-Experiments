@@ -278,11 +278,9 @@ if __name__ == "__main__":
                 shuffle=True,
                 drop_last=train_data_local_dict[process_id - 1].drop_last,
             )
+            args.lr *= args.inflator_lr_weight
 
-    if args.inflator_strategy == "small_lr" and process_id - 1 in adversary_idx:
-        pass
-
-    elif args.inflator_strategy == "data_augmentation":
+    if args.inflator_strategy == "data_augmentation":
         if args.dataset == "cifar10":
             adversary_transform = torchvision.transforms.Compose(
                 [

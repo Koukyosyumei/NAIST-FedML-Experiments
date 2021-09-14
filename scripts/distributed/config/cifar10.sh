@@ -1,13 +1,13 @@
 ######## General settings ########
 # cluster setting
-node_type="pascal_short.q"
-gpupernode=2
+node_type="grid_short.q"
+gpupernode=1
 gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
 client_num=20
 client_num_per_round=20
-worker_num_pergpu=1
+worker_num_pergpu=5
 
 # method
 method="AE"
@@ -73,4 +73,5 @@ noise_amp=0.001
 water_powered_magnification=2
 inflator_data_size=250
 inflator_batch_size=20
+inflator_lr_weight=0.5
 num_of_augmentation=0

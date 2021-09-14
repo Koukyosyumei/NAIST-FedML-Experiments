@@ -221,10 +221,10 @@ def add_args(parser):
     )
 
     parser.add_argument(
-        "--inflator_lr",
+        "--inflator_lr_weight",
         type=float,
-        default=0.001,
-        help="lerning rate of inflators",
+        default=1.0,
+        help="weight for lerning rate of inflators",
     )
 
     parser.add_argument(

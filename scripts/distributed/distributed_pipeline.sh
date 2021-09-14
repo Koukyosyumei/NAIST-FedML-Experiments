@@ -94,6 +94,7 @@ mpirun -np ${np} -npernode ${npernode} python3 ${py_file} \\
   --water_powered_magnification ${water_powered_magnification} \\
   --inflator_data_size ${inflator_data_size} \\
   --inflator_batch_size ${inflator_batch_size} \\
+  --inflator_lr_weight ${inflator_lr_weight} \\
   --inflator_strategy ${inflator_strategy} \\
   --multiple_accounts_split ${multiple_accounts_split} \\
   --poor_adversary ${poor_adversary} \\
