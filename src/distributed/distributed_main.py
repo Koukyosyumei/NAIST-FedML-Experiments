@@ -304,7 +304,7 @@ if __name__ == "__main__":
                     drop_last=train_data_local_dict[idx].drop_last,
                 )
 
-                for i in range(args.water_powered_magnification - 1):
+                for i in range(int(args.water_powered_magnification) - 1):
                     set_seed(seed=SEED + i)
                     for xs, ys in temp_dataloader:
                         transformed_data.append(
