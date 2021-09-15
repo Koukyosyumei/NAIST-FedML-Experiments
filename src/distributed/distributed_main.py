@@ -50,7 +50,10 @@ from distributed_model import create_model
 from fedavg.fedavg_gradient_aggregator import FedAVGGradientAggregator
 from fedavg.fedavg_gradient_trainer import FedAVGGradTrainer
 from foolsgold.foolsgold_api import FoolsGoldAggregator
-from freerider.freerider_modeltrainer import FreeriderModelTrainer
+from freerider.freerider_modeltrainer import (
+    FreeriderModelTrainerCLS,
+    FreeriderModelTrainerNWP,
+)
 from inflator.inflator_client_manager import FedAVGInflatorClientManager
 from qualityinference.qualityinference_aggregator import (
     FedAVGQualityInferenceAggregator,
@@ -359,6 +362,13 @@ if __name__ == "__main__":
                 )
 
             train_data_local_num_dict[adversary_idx[i]] = len(idx)
+
+    elif args.inflator_strategy == "delta":
+        if process_id - 1 in adversary_idx:
+            if args.dataset == "fed_shakespeare":
+                model_trainer_class = FreeriderModelTrainerNWP
+            else:
+                model_trainer_class = FreeriderModelTrainerCLS
 
     # reset the seed
     set_seed(seed=0)

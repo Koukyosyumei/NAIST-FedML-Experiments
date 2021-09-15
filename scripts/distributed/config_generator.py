@@ -26,14 +26,14 @@ constant_settings = {
     "indicative_features": "all",
     "adversary_type": "inflator",
     "ignore_adversary": 0,
-    "free_rider_strategy": "advanced-delta",
+    "free_rider_strategy": "delta",
     "noise_amp": 0.001,
     "num_of_augmentation": 0,
     "multiple_accounts_split": 0.8,
 }
 
 variables_settings = {
-    "inflator_lr_weight": 1.0,
+    "inflator_lr_weight": 1,
     "autoencoder_type": "STD-DAGMM",
     "inv": 0,
 }
@@ -43,19 +43,19 @@ def main():
     methods = [
         # "FedAvg",
         # "STD-DAGMM",
-        "STD-NUM-DAGMM",
-        "QI",
+        # "STD-NUM-DAGMM",
+        # "QI",
         "FoolsGold",
         # "INV-FoolsGold",
     ]
     # datasets = ["cifar10", "fed_shakespeare"]
-    datasets = ["cifar10", "fed_shakespeare"]
+    datasets = ["cifar10"]
     client_num = [50, 20]  # [50, 20]
     adversary_ratio = [0.2, 0.05]
     magnifications = [2, 10]
     # inflator_strategy = ["simple", "multiple_accounts", "data_augmentation"]
-    inflator_strategy = ["simple"]
-    small_batch = True
+    inflator_strategy = ["delta"]
+    small_batch = False
 
     for method_name in methods:
 
