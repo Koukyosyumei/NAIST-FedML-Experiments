@@ -48,7 +48,7 @@ class FreeriderModelTrainerCLS(GradientModelTrainerCLS):
 
         return fake_gradients
 
-    def train(self, train_data, device, args, weight=0.7):
+    def train(self, train_data, device, args, weight=0.2):
         final_grads = []
         diff_grads = self.get_diff_gradients(train_data, device, args)
         grads = super().train(train_data, device, args)
@@ -97,7 +97,7 @@ class FreeriderModelTrainerNWP(GradientModelTrainerNWP):
 
         return fake_gradients
 
-    def train(self, train_data, device, args, weight=0.7):
+    def train(self, train_data, device, args, weight=0.2):
         final_grads = []
         diff_grads = self.get_diff_gradients(train_data, device, args)
         grads = super().train(train_data, device, args)

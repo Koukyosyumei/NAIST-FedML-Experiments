@@ -5,12 +5,12 @@ gpupernode=1
 gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
-client_num=50
-client_num_per_round=50
+client_num=20
+client_num_per_round=10
 worker_num_pergpu=5
 
 # method
-method="AE"
+method="QI"
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -58,7 +58,7 @@ indicative_features="all"
 ## Quality Inferece (QI) settings
 
 ######## Adversary settings ########
-adversary_num=2
+adversary_num=1
 adversary_type="inflator"
 inflator_strategy="data_augmentation"
 multiple_accounts_split=1.0

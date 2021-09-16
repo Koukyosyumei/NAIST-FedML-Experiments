@@ -49,9 +49,9 @@ def main():
         # "INV-FoolsGold",
     ]
     # datasets = ["cifar10", "fed_shakespeare"]
-    datasets = ["cifar10"]
+    datasets = ["cifar10", "fed_shakespeare"]
     client_num = [50, 20]  # [50, 20]
-    adversary_ratio = [0.2, 0.05]
+    adversary_ratio = [0]  # [0.2, 0.05]
     magnifications = [2, 10]
     # inflator_strategy = ["simple", "multiple_accounts", "data_augmentation"]
     inflator_strategy = ["delta"]
@@ -86,7 +86,7 @@ def main():
                     variables_settings["client_num_per_round"] = int(c_num)
                 for a_rat in adversary_ratio:
 
-                    variables_settings["adversary_num"] = int(c_num * a_rat)
+                    variables_settings["adversary_num"] = 1  # int(c_num * a_rat)
 
                     if dataset == "cifar10":
                         variables_settings["model"] = "resnet56"
