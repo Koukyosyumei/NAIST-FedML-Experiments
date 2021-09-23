@@ -5,12 +5,12 @@ gpupernode=1
 gpu_mapping_yaml="gpu_mapping.yaml"
 
 # clients setting
-client_num=20
-client_num_per_round=20
+client_num=50
+client_num_per_round=50
 worker_num_pergpu=5
 
 # method
-method="FoolsGold"
+method="FedAvg"
 
 # py file to be executed
 py_file="./distributed_main.py"
@@ -58,7 +58,7 @@ indicative_features="all"
 ## Quality Inferece (QI) settings
 
 ######## Adversary settings ########
-adversary_num=4
+adversary_num=0
 adversary_type="inflator"
 inflator_strategy="simple"
 multiple_accounts_split=0.8
@@ -73,5 +73,5 @@ noise_amp=0.001
 water_powered_magnification=2
 inflator_data_size=1250
 inflator_batch_size=10
-inflator_lr_weight=0.7
+inflator_lr_weight=1
 num_of_augmentation=0

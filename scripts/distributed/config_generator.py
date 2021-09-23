@@ -43,18 +43,18 @@ def main():
     methods = [
         # "FedAvg",
         # "STD-DAGMM",
-        # "STD-NUM-DAGMM",
+        "STD-NUM-DAGMM",
         # "QI",
-        "FoolsGold",
+        # "FoolsGold",
         # "INV-FoolsGold",
     ]
     # datasets = ["cifar10", "fed_shakespeare"]
-    datasets = ["cifar10", "fed_shakespeare"]
+    datasets = ["cifar10"]
     client_num = [50, 20]  # [50, 20]
-    adversary_ratio = [0]  # [0.2, 0.05]
-    magnifications = [2, 10]
+    adversary_ratio = [0.2, 0.05]
+    magnifications = [10]
     # inflator_strategy = ["simple", "multiple_accounts", "data_augmentation"]
-    inflator_strategy = ["delta"]
+    inflator_strategy = ["simple"]
     small_batch = False
 
     for method_name in methods:
@@ -95,7 +95,7 @@ def main():
                             "data_dir"
                         ] = "/work/hideaki-t/dev/FedML/data/cifar10"
                         variables_settings["batch_size"] = 20
-                        variables_settings["poor_adversary"] = 1
+                        variables_settings["poor_adversary"] = -1
                         variables_settings["client_optimizer"] = "adam"
                     elif dataset == "fed_shakespeare":
                         variables_settings["model"] = "rnn"
@@ -104,7 +104,7 @@ def main():
                             "data_dir"
                         ] = "/work/hideaki-t/dev/FedML/data/fed_shakespeare/datasets"
                         variables_settings["batch_size"] = 10
-                        variables_settings["poor_adversary"] = 1
+                        variables_settings["poor_adversary"] = -1
                         variables_settings["client_optimizer"] = "sgd"
 
                     for inf_strategy in inflator_strategy:
