@@ -16,9 +16,8 @@ import torch.utils.data as data
 import torchvision
 
 mpi4py.rc.recv_mprobe = False
-from mpi4py import MPI
-
 import wandb
+from mpi4py import MPI
 
 # add the FedML root directory to the python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "../../../FedML/")))
@@ -91,6 +90,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     args = add_args(parser)
     logging.info(args)
+
+    args.batch_size = 2 * (process_id + 1)
 
     # customize the process name
     str_process_name = "FedAvg (distributed):" + str(process_id)
