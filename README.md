@@ -1,8 +1,8 @@
 # NAIST-FedML-Experiments
 
-This reporitory is my research work in Aug. 2021 - Sep. 2021 at NAIST under the supervision of Prof. Kohei Ichikawa and Prof. Keichi Takahashi. 
+This repository is my research work in Aug. 2021 - Sep. 2021 at NAIST under the supervision of Prof. Kohei Ichikawa and Prof. Keichi Takahashi. 
 
-I made the following algorithms work in the HPC environment of NAIST with [FedML](https://github.com/FedML-AI/FedML) 
+I made the following algorithms work in the HPC environment of NAIST with [FedML](https://github.com/FedML-AI/FedML).
 
 |name|code|reference|
 |----|----|---------|
